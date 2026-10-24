@@ -1,0 +1,70 @@
+@model Green_Basket.Models.Contact
+
+@{
+    ViewData["Title"] = "New Contact";
+    Layout = "_Layout";
+}
+
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Add Recovery Contact</h1>
+            <p class="text-sm text-slate-500 mt-1">Register a custodian, vendor contact, or system administrator.</p>
+        </div>
+        <a asp-action="Index" class="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Back to list</span>
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
+        <form asp-action="Create" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="p-3 rounded-lg bg-rose-50 text-rose-700 text-xs"></div>
+
+            <div>
+                <label asp-for="AssetId" class="form-label">Linked Hospital Asset</label>
+                <select asp-for="AssetId" class="form-select" asp-items="ViewBag.AssetId">
+                    <option value="">-- Select Target Asset --</option>
+                </select>
+                <span asp-validation-for="AssetId" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="Name" class="form-label">Full Name</label>
+                <input asp-for="Name" class="form-input" placeholder="e.g. Dr. Sarah Chen, James Alvarez" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="Role" class="form-label">Role / Responsibility</label>
+                <input asp-for="Role" class="form-input" placeholder="e.g. Lead DBA, PACS Engineer, Vendor Technical Lead" />
+                <span asp-validation-for="Role" class="text-danger"></span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="Phone" class="form-label">Emergency Phone</label>
+                    <input asp-for="Phone" class="form-input" placeholder="+1 (555) 019-2834" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Email" class="form-label">Email Address</label>
+                    <input asp-for="Email" class="form-input" placeholder="custodian@hospital.org" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50">
+                    Cancel
+                </a>
+                <button type="submit" class="px-5 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm flex items-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Save Contact</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

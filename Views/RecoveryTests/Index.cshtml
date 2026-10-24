@@ -1,0 +1,152 @@
+@model IEnumerable<Green_Basket.Models.RecoveryTest>
+@using Green_Basket.Models.ViewModels
+
+@{
+    ViewData["Title"] = "Recovery Tests";
+    Layout = "_Layout";
+    var currentAsset = ViewBag.CurrentAsset as Green_Basket.Models.Asset;
+}
+
+<partial name="Components/_PageHeader" model='new PageHeaderModel { 
+    Title = currentAsset != null ? $"Tests — {currentAsset.Name}" : "Disaster Recovery Test Results", 
+    Subtitle = "Simulated restoration drills, target RTO/RPO compliance evaluations, and lessons learned.",
+    ActionText = "Log Test Result",
+    ActionUrl = currentAsset != null ? Url.Action("Create", "RecoveryTests", new { assetId = currentAsset.Id }) : Url.Action("Create", "RecoveryTests"),
+    ActionIcon = "plus-circle",
+    RequiredRole = "Admin,DRCoordinator"
+}' />
+
+@if (currentAsset != null)
+{
+    <div class="mb-4">
+        <a asp-action="Index" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-emerald-700 transition-colors">
+            <i data-lucide="filter-x" class="w-3.5 h-3.5"></i>
+            <span>Showing filtered asset: <strong>@currentAsset.Name</strong> (Click to view all)</span>
+        </a>
+    </div>
+}
+
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-600">
+                Recorded Simulation Drills
+            </span>
+            <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-200/70 text-slate-700">
+                @Model.Count()
+            </span>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-slate-200 bg-slate-50/80 text-slate-600 text-xs uppercase tracking-wider font-bold">
+                    <th class="py-4 px-6 whitespace-nowrap w-32">Date</th>
+                    <th class="py-4 px-6 whitespace-nowrap min-w-[260px]">Target Hospital System</th>
+                    <th class="py-4 px-6 whitespace-nowrap w-32">Result</th>
+                    <th class="py-4 px-6 whitespace-nowrap min-w-[200px]">RTO (Actual vs Target)</th>
+                    <th class="py-4 px-6 whitespace-nowrap min-w-[200px]">RPO (Actual vs Target)</th>
+                    <th class="py-4 px-6 whitespace-nowrap min-w-[280px]">Lessons Learned</th>
+                    <th class="py-4 pr-8 pl-6 text-right whitespace-nowrap w-32">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-16 text-slate-400">
+                            <div class="flex flex-col items-center justify-center gap-2">
+                                <i data-lucide="activity" class="w-10 h-10 text-slate-300 stroke-[1.5]"></i>
+                                <p class="text-sm font-medium text-slate-500">No recovery drill tests logged yet.</p>
+                                <p class="text-xs text-slate-400">Click "Log Test Result" above to record simulation outcomes.</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @foreach (var item in Model)
+                {
+                    var targetRto = item.Asset?.RtoMinutes ?? 0;
+                    var targetRpo = item.Asset?.RpoMinutes ?? 0;
+                    var isRtoMet = item.ActualRtoMinutes <= targetRto;
+                    var isRpoMet = item.ActualRpoMinutes <= targetRpo;
+
+                    <tr class="hover:bg-slate-50/70 transition-colors group">
+                        <td class="py-4 px-6 whitespace-nowrap text-xs font-semibold text-slate-900 font-mono align-middle">
+                            @item.TestDate.ToString("yyyy-MM-dd")
+                        </td>
+                        <td class="py-4 px-6 align-middle">
+                            <a asp-controller="Assets" asp-action="Details" asp-route-id="@item.AssetId" class="font-bold text-slate-900 group-hover:text-emerald-700 transition-colors block text-sm leading-snug">
+                                @item.Asset?.Name
+                            </a>
+                            <span class="inline-block text-xs font-medium text-slate-500 mt-0.5">@item.Asset?.Type</span>
+                        </td>
+                        <td class="py-4 px-6 whitespace-nowrap align-middle">
+                            <partial name="Components/_Badge" model='new BadgeModel { Value = item.Result, Type = "result" }' />
+                        </td>
+                        <td class="py-4 px-6 whitespace-nowrap align-middle">
+                            <div class="flex items-center gap-1.5 font-mono text-xs">
+                                <span class="font-bold text-slate-900">@item.ActualRtoMinutes m</span>
+                                <span class="text-slate-400">/ @targetRto m</span>
+                                @if (isRtoMet)
+                                {
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+                                        Met
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] bg-rose-50 text-rose-700 font-bold border border-rose-200">
+                                        +@(item.ActualRtoMinutes - targetRto)m Over
+                                    </span>
+                                }
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 whitespace-nowrap align-middle">
+                            <div class="flex items-center gap-1.5 font-mono text-xs">
+                                <span class="font-bold text-slate-900">@item.ActualRpoMinutes m</span>
+                                <span class="text-slate-400">/ @targetRpo m</span>
+                                @if (isRpoMet)
+                                {
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+                                        Met
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] bg-rose-50 text-rose-700 font-bold border border-rose-200">
+                                        +@(item.ActualRpoMinutes - targetRpo)m Loss
+                                    </span>
+                                }
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 text-xs text-slate-600 align-middle">
+                            <span class="line-clamp-2" title="@item.LessonsLearned">
+                                @(string.IsNullOrEmpty(item.LessonsLearned) ? "—" : item.LessonsLearned)
+                            </span>
+                        </td>
+                        <td class="py-4 pr-8 pl-6 text-right whitespace-nowrap align-middle">
+                            <div class="inline-flex items-center justify-end gap-1.5">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="p-2 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all" title="View Details">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </a>
+                                @if (User.IsInRole("Admin") || User.IsInRole("DRCoordinator"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="p-2 text-slate-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-all" title="Edit">
+                                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                                    </a>
+                                }
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="p-2 text-slate-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-all" title="Delete">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

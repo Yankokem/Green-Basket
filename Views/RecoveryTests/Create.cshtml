@@ -1,0 +1,99 @@
+@model Green_Basket.Models.RecoveryTest
+
+@{
+    ViewData["Title"] = "Log Test Result";
+    Layout = "_Layout";
+}
+
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Record Disaster Recovery Test</h1>
+            <p class="text-sm text-slate-500 mt-1">Log simulated failover drill outcomes and lessons learned.</p>
+        </div>
+        <a asp-action="Index" class="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Back to list</span>
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
+        <form asp-action="Create" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="p-3 rounded-lg bg-rose-50 text-rose-700 text-xs"></div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="AssetId" class="form-label">Target System / Asset</label>
+                    <select asp-for="AssetId" class="form-select" asp-items="ViewBag.AssetId">
+                        <option value="">-- Select Target System --</option>
+                    </select>
+                    <span asp-validation-for="AssetId" class="text-danger"></span>
+                </div>
+
+                <div>
+                    <label asp-for="TestDate" class="form-label">Drill Date</label>
+                    <input asp-for="TestDate" type="date" class="form-input" />
+                    <span asp-validation-for="TestDate" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Result" class="form-label">Drill Evaluation Result</label>
+                <select asp-for="Result" class="form-select">
+                    <option value="Passed">Passed (Met Recovery Thresholds)</option>
+                    <option value="Failed">Failed (Drill Breached Targets or Incomplete)</option>
+                </select>
+                <span asp-validation-for="Result" class="text-danger"></span>
+            </div>
+
+            <!-- Actual RTO & Actual RPO -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <div>
+                    <label asp-for="ActualRtoMinutes" class="form-label">Actual Recovery Time (Minutes)</label>
+                    <div class="relative">
+                        <input asp-for="ActualRtoMinutes" type="number" class="form-input pr-16" placeholder="e.g. 45" />
+                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">minutes</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Elapsed time from simulation start to online status.</p>
+                    <span asp-validation-for="ActualRtoMinutes" class="text-danger"></span>
+                </div>
+
+                <div>
+                    <label asp-for="ActualRpoMinutes" class="form-label">Actual Data Loss (Minutes)</label>
+                    <div class="relative">
+                        <input asp-for="ActualRpoMinutes" type="number" class="form-input pr-16" placeholder="e.g. 10" />
+                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">minutes</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Unreplicated data difference between source and DR replica.</p>
+                    <span asp-validation-for="ActualRpoMinutes" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Notes" class="form-label">Drill Execution Notes</label>
+                <textarea asp-for="Notes" rows="3" class="form-textarea text-xs" placeholder="Describe the simulation scenario (e.g. SAN controller shutdown, ransomware simulation)."></textarea>
+                <span asp-validation-for="Notes" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="LessonsLearned" class="form-label text-amber-900 font-semibold flex items-center gap-1.5">
+                    <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i>
+                    <span>Lessons Learned &amp; Process Improvements</span>
+                </label>
+                <textarea asp-for="LessonsLearned" rows="3" class="form-textarea text-xs border-amber-300 focus:border-amber-500" placeholder="e.g. Storage network bottleneck observed; need secondary 10Gbps line."></textarea>
+                <span asp-validation-for="LessonsLearned" class="text-danger"></span>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50">
+                    Cancel
+                </a>
+                <button type="submit" class="px-5 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm flex items-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Save Test Result</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,32 @@
+@model Green_Basket.Models.ViewModels.PageHeaderModel
+
+<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-6">
+    <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">@Model.Title</h1>
+        @if (!string.IsNullOrEmpty(Model.Subtitle))
+        {
+            <p class="mt-1.5 text-sm text-slate-500 font-normal">@Model.Subtitle</p>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.ActionText) && !string.IsNullOrEmpty(Model.ActionUrl))
+    {
+        bool canShowAction = true;
+        if (!string.IsNullOrEmpty(Model.RequiredRole))
+        {
+            var allowedRoles = Model.RequiredRole.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            canShowAction = allowedRoles.Any(r => User.IsInRole(r));
+        }
+
+        if (canShowAction)
+        {
+            <a href="@Model.ActionUrl" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow transition-all shrink-0 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                @if (!string.IsNullOrEmpty(Model.ActionIcon))
+                {
+                    <i data-lucide="@Model.ActionIcon" class="w-4 h-4"></i>
+                }
+                <span>@Model.ActionText</span>
+            </a>
+        }
+    }
+</div>

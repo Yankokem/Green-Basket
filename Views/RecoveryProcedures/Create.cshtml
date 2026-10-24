@@ -1,0 +1,57 @@
+@model Green_Basket.Models.RecoveryProcedure
+
+@{
+    ViewData["Title"] = "New Recovery Procedure";
+    Layout = "_Layout";
+}
+
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Add Recovery Procedure</h1>
+            <p class="text-sm text-slate-500 mt-1">Specify technical recovery actions linked to an asset.</p>
+        </div>
+        <a asp-action="Index" class="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Back to list</span>
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
+        <form asp-action="Create" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="p-3 rounded-lg bg-rose-50 text-rose-700 text-xs"></div>
+
+            <div>
+                <label asp-for="AssetId" class="form-label">Linked Hospital Asset</label>
+                <select asp-for="AssetId" class="form-select" asp-items="ViewBag.AssetId">
+                    <option value="">-- Select Target Asset --</option>
+                </select>
+                <span asp-validation-for="AssetId" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="Title" class="form-label">Procedure Title</label>
+                <input asp-for="Title" class="form-input" placeholder="e.g. Failover to Warm Standby Server, Cold Restore from Tape" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="Steps" class="form-label">Step-by-Step Instructions</label>
+                <textarea asp-for="Steps" rows="8" class="form-textarea font-mono text-xs" placeholder="1. Sever infected network segment.&#10;2. Verify secondary vault integrity.&#10;3. Trigger VM clone sequence.&#10;4. Re-route DNS records."></textarea>
+                <p class="text-[11px] text-slate-400 mt-1">Enter numbered instructions, command-lines, or verification steps.</p>
+                <span asp-validation-for="Steps" class="text-danger"></span>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50">
+                    Cancel
+                </a>
+                <button type="submit" class="px-5 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm flex items-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Save Procedure</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

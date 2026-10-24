@@ -1,0 +1,55 @@
+@model Green_Basket.Models.RecoveryTest
+
+@{
+    ViewData["Title"] = "Delete Test Record";
+    Layout = "_Layout";
+}
+
+<div class="max-w-xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-sm border border-rose-200 overflow-hidden">
+        <div class="bg-rose-50 p-6 border-b border-rose-100 flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-rose-900">Delete Test Record</h2>
+                <p class="text-xs text-rose-700 mt-1">
+                    Are you sure you want to delete this disaster recovery simulation test record?
+                </p>
+            </div>
+        </div>
+
+        <div class="p-6 space-y-4">
+            <div class="rounded-lg bg-slate-50 p-4 border border-slate-200 text-sm space-y-2">
+                <div class="flex justify-between">
+                    <span class="text-slate-500 font-medium">Target Asset:</span>
+                    <span class="text-slate-900 font-bold">@Model.Asset?.Name</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500 font-medium">Drill Date:</span>
+                    <span class="text-slate-900 font-mono text-xs">@Model.TestDate.ToString("yyyy-MM-dd")</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500 font-medium">Result:</span>
+                    <span class="font-semibold @(Model.Result == "Passed" ? "text-emerald-700" : "text-rose-700")">@Model.Result</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500 font-medium">Actual Recovery:</span>
+                    <span class="text-slate-700 font-mono text-xs">RTO: @Model.ActualRtoMinutes min | RPO: @Model.ActualRpoMinutes min</span>
+                </div>
+            </div>
+
+            <form asp-action="Delete" method="post" class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50">
+                    Cancel
+                </a>
+                <button type="submit" class="px-5 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm flex items-center gap-2">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <span>Delete Record</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

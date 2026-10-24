@@ -1,0 +1,162 @@
+@model IEnumerable<Green_Basket.Models.Asset>
+@using Green_Basket.Models.ViewModels
+
+@{
+    ViewData["Title"] = "Hospital Assets";
+    Layout = "_Layout";
+}
+
+<!-- Page Header Component -->
+<partial name="Components/_PageHeader" model='new PageHeaderModel { 
+    Title = "Hospital IT Assets & Criticality", 
+    Subtitle = "Core clinical, diagnostic, and administrative systems prioritized for disaster recovery restoration.",
+    ActionText = "New Asset",
+    ActionUrl = Url.Action("Create", "Assets"),
+    ActionIcon = "plus",
+    RequiredRole = "Admin,DRCoordinator"
+}' />
+
+<!-- Assets Table Card -->
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+    <!-- Card Top Header -->
+    <div class="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-slate-50/60">
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-600">
+                Registered Systems
+            </span>
+            <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-200/70 text-slate-700">
+                @Model.Count()
+            </span>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Ordered by restore priority (Critical Tier 1 first)</span>
+        </div>
+    </div>
+
+    <!-- Responsive Table Container -->
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-slate-200 bg-slate-50/80 text-slate-600 text-xs uppercase tracking-wider font-bold">
+                    <th class="py-4 px-6 whitespace-nowrap w-36">Priority</th>
+                    <th class="py-4 px-6 whitespace-nowrap min-w-[280px]">Asset Name &amp; System Type</th>
+                    <th class="py-4 px-6 whitespace-nowrap min-w-[220px]">System Lead / Owner</th>
+                    <th class="py-4 px-6 whitespace-nowrap w-36">RTO Target</th>
+                    <th class="py-4 px-6 whitespace-nowrap w-36">RPO Target</th>
+                    <th class="py-4 px-6 whitespace-nowrap min-w-[260px]">Backup Dependency</th>
+                    <th class="py-4 px-6 text-center whitespace-nowrap w-36">Linked Records</th>
+                    <th class="py-4 pr-8 pl-6 text-right whitespace-nowrap w-36">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-16 text-slate-400">
+                            <div class="flex flex-col items-center justify-center gap-2">
+                                <i data-lucide="server" class="w-10 h-10 text-slate-300 stroke-[1.5]"></i>
+                                <p class="text-sm font-medium text-slate-500">No assets registered yet.</p>
+                                <p class="text-xs text-slate-400">Click "New Asset" above to add your first hospital system.</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @foreach (var item in Model)
+                {
+                    <tr class="hover:bg-slate-50/70 transition-colors group">
+                        <!-- Priority Badge -->
+                        <td class="py-4 px-6 whitespace-nowrap align-middle">
+                            <partial name="Components/_Badge" model='new BadgeModel { Value = item.Priority, Type = "priority" }' />
+                        </td>
+
+                        <!-- Asset Name & Type (Guaranteed generous width, no single-word wrapping!) -->
+                        <td class="py-4 px-6 align-middle">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="font-bold text-slate-900 group-hover:text-emerald-700 transition-colors block text-sm leading-snug">
+                                @item.Name
+                            </a>
+                            <span class="inline-block text-xs font-medium text-slate-500 mt-0.5">
+                                @item.Type
+                            </span>
+                        </td>
+
+                        <!-- Owner Lead -->
+                        <td class="py-4 px-6 text-xs font-medium text-slate-700 align-middle">
+                            @item.Owner
+                        </td>
+
+                        <!-- RTO Target -->
+                        <td class="py-4 px-6 whitespace-nowrap align-middle">
+                            <span class="inline-flex items-center gap-1.5 font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-200/60 shadow-xs">
+                                <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
+                                @item.RtoMinutes min
+                            </span>
+                        </td>
+
+                        <!-- RPO Target -->
+                        <td class="py-4 px-6 whitespace-nowrap align-middle">
+                            <span class="inline-flex items-center gap-1.5 font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-200/60 shadow-xs">
+                                <i data-lucide="database" class="w-3.5 h-3.5 text-slate-400"></i>
+                                @item.RpoMinutes min
+                            </span>
+                        </td>
+
+                        <!-- Backup Dependency -->
+                        <td class="py-4 px-6 text-xs text-slate-600 leading-relaxed align-middle">
+                            <span class="line-clamp-2" title="@item.BackupDependency">
+                                @item.BackupDependency
+                            </span>
+                        </td>
+
+                        <!-- Linked Counts -->
+                        <td class="py-4 px-6 text-center whitespace-nowrap align-middle">
+                            <div class="inline-flex items-center gap-1.5 text-xs">
+                                <span title="@item.RecoveryProcedures.Count Procedures" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-mono font-medium hover:bg-slate-200 transition-colors">
+                                    <i data-lucide="file-text" class="w-3 h-3 text-slate-400"></i>
+                                    @item.RecoveryProcedures.Count
+                                </span>
+                                <span title="@item.Contacts.Count Contacts" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-mono font-medium hover:bg-slate-200 transition-colors">
+                                    <i data-lucide="users" class="w-3 h-3 text-slate-400"></i>
+                                    @item.Contacts.Count
+                                </span>
+                                <span title="@item.RecoveryTests.Count Tests" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-mono font-medium hover:bg-slate-200 transition-colors">
+                                    <i data-lucide="activity" class="w-3 h-3 text-slate-400"></i>
+                                    @item.RecoveryTests.Count
+                                </span>
+                            </div>
+                        </td>
+
+                        <!-- Actions (Wide right padding, never clipped!) -->
+                        <td class="py-4 pr-8 pl-6 text-right whitespace-nowrap align-middle">
+                            <div class="inline-flex items-center justify-end gap-1.5">
+                                <a asp-action="Details" asp-route-id="@item.Id" 
+                                   class="p-2 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all" 
+                                   title="View Recovery Plan">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </a>
+
+                                @if (User.IsInRole("Admin") || User.IsInRole("DRCoordinator"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.Id" 
+                                       class="p-2 text-slate-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-all" 
+                                       title="Edit Asset">
+                                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                                    </a>
+                                }
+
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a asp-action="Delete" asp-route-id="@item.Id" 
+                                       class="p-2 text-slate-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-all" 
+                                       title="Delete Asset">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

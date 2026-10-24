@@ -1,0 +1,39 @@
+@model Green_Basket.Models.ViewModels.ButtonModel
+
+@{
+    var baseClass = "inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
+    var variantClass = Model.Variant?.ToLower() switch
+    {
+        "primary" => "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500 shadow-sm shadow-emerald-600/20",
+        "secondary" => "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200 focus:ring-slate-400",
+        "danger" => "bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500 shadow-sm shadow-rose-600/20",
+        "outline" => "border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 focus:ring-emerald-500",
+        "ghost" => "text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:ring-slate-400",
+        _ => "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500"
+    };
+
+    var finalClass = $"{baseClass} {variantClass} {Model.CustomClass}".Trim();
+}
+
+@if (string.IsNullOrEmpty(Model.Href))
+{
+    <button type="@(Model.IsSubmit ? "submit" : "button")" 
+            onclick="@Model.OnClick"
+            class="@finalClass">
+        @if (!string.IsNullOrEmpty(Model.Icon))
+        {
+            <i data-lucide="@Model.Icon" class="w-4 h-4"></i>
+        }
+        <span>@Model.Text</span>
+    </button>
+}
+else
+{
+    <a href="@Model.Href" class="@finalClass">
+        @if (!string.IsNullOrEmpty(Model.Icon))
+        {
+            <i data-lucide="@Model.Icon" class="w-4 h-4"></i>
+        }
+        <span>@Model.Text</span>
+    </a>
+}

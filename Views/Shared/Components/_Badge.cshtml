@@ -1,0 +1,44 @@
+@model Green_Basket.Models.ViewModels.BadgeModel
+
+@{
+    var val = Model.Value?.Trim() ?? string.Empty;
+    var badgeClass = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset whitespace-nowrap shadow-xs";
+
+    var colorClass = val.ToLower() switch
+    {
+        // Priority
+        "critical" => "bg-rose-50 text-rose-700 ring-rose-600/25",
+        "high" => "bg-amber-50 text-amber-800 ring-amber-600/25",
+        "medium" => "bg-blue-50 text-blue-700 ring-blue-700/25",
+        "low" => "bg-slate-100 text-slate-700 ring-slate-600/20",
+
+        // Results
+        "passed" => "bg-emerald-50 text-emerald-700 ring-emerald-600/25",
+        "failed" => "bg-rose-50 text-rose-700 ring-rose-600/25",
+
+        // Tasks
+        "pending" => "bg-slate-100 text-slate-700 ring-slate-500/20",
+        "in progress" => "bg-amber-50 text-amber-800 ring-amber-600/25",
+        "done" => "bg-emerald-50 text-emerald-700 ring-emerald-600/25",
+
+        // Target comparisons
+        "target met" => "bg-emerald-50 text-emerald-700 ring-emerald-600/25",
+        "target exceeded" => "bg-rose-50 text-rose-700 ring-rose-600/25",
+
+        _ => "bg-slate-100 text-slate-700 ring-slate-500/20"
+    };
+
+    var dotColor = val.ToLower() switch
+    {
+        "critical" or "failed" or "target exceeded" => "bg-rose-500",
+        "high" or "in progress" => "bg-amber-500",
+        "medium" => "bg-blue-500",
+        "passed" or "done" or "target met" => "bg-emerald-500",
+        _ => "bg-slate-400"
+    };
+}
+
+<span class="@badgeClass @colorClass">
+    <span class="w-1.5 h-1.5 rounded-full @dotColor shrink-0"></span>
+    <span>@val</span>
+</span>

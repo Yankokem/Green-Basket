@@ -1,0 +1,105 @@
+@model Green_Basket.Models.Asset
+
+@{
+    ViewData["Title"] = "Add New Asset";
+    Layout = "_Layout";
+}
+
+<div class="max-w-2xl mx-auto">
+    <!-- Breadcrumb / Header -->
+    <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Add New Hospital Asset</h1>
+            <p class="text-sm text-slate-500 mt-1">Register an IT system to establish disaster recovery targets.</p>
+        </div>
+        <a asp-action="Index" class="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Back to list</span>
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
+        <form asp-action="Create" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="p-3 rounded-lg bg-rose-50 text-rose-700 text-xs"></div>
+
+            <!-- Asset Name -->
+            <div>
+                <label asp-for="Name" class="form-label">Asset / System Name</label>
+                <input asp-for="Name" class="form-input" placeholder="e.g. Epic Electronic Medical Records (EMR)" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <!-- System Type & Priority (Grid) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="Type" class="form-label">System Type / Category</label>
+                    <input asp-for="Type" class="form-input" placeholder="e.g. Clinical Core, PACS, Pharmacy" />
+                    <span asp-validation-for="Type" class="text-danger"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Priority" class="form-label">Priority Level (Restore Order)</label>
+                    <select asp-for="Priority" class="form-select">
+                        <option value="Critical">Critical (Tier 1 - Immediate)</option>
+                        <option value="High">High (Tier 2 - Under 4 Hours)</option>
+                        <option value="Medium">Medium (Tier 3 - Under 12 Hours)</option>
+                        <option value="Low">Low (Tier 4 - Non-Urgent)</option>
+                    </select>
+                    <span asp-validation-for="Priority" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Owner Lead -->
+            <div>
+                <label asp-for="Owner" class="form-label">System Owner / Responsible Lead</label>
+                <input asp-for="Owner" class="form-input" placeholder="e.g. Clinical Informatics (Dr. Sarah Chen)" />
+                <span asp-validation-for="Owner" class="text-danger"></span>
+            </div>
+
+            <!-- RTO & RPO Targets (Grid) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <div>
+                    <label asp-for="RtoMinutes" class="form-label">RTO Target (Minutes)</label>
+                    <div class="relative">
+                        <input asp-for="RtoMinutes" type="number" class="form-input pr-16" placeholder="60" />
+                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">minutes</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Maximum acceptable downtime</p>
+                    <span asp-validation-for="RtoMinutes" class="text-danger"></span>
+                </div>
+
+                <div>
+                    <label asp-for="RpoMinutes" class="form-label">RPO Target (Minutes)</label>
+                    <div class="relative">
+                        <input asp-for="RpoMinutes" type="number" class="form-input pr-16" placeholder="15" />
+                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">minutes</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Maximum tolerable data loss</p>
+                    <span asp-validation-for="RpoMinutes" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Backup Dependency -->
+            <div>
+                <label asp-for="BackupDependency" class="form-label">Backup Dependency / Source</label>
+                <input asp-for="BackupDependency" class="form-input" placeholder="e.g. PureStorage SAN Snapshot, Veeam NAS Vault, Azure DR Replica" />
+                <p class="text-[11px] text-slate-400 mt-1">Backup location or upstream dependency required to recover this asset.</p>
+                <span asp-validation-for="BackupDependency" class="text-danger"></span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="px-5 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm shadow-emerald-600/30 transition-all flex items-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Save Asset</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
