@@ -1,16 +1,41 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Runtime.InteropServices;
 using Green_Basket.Data;
 using Green_Basket.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Support dynamic port from cloud hosts like Render
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
 // 1. Add Database Context
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+    ?? "Data Source=GreenBasket_DRP.db";
+
+// Fall back to SQLite if running on Linux/Docker and connection string still points to Windows LocalDB
+if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
+    && connectionString.Contains("localdb", StringComparison.OrdinalIgnoreCase))
+{
+    connectionString = "Data Source=GreenBasket_DRP.db";
+}
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+{
+    if (connectionString.Contains(".db") || connectionString.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
+    {
+        options.UseSqlite(connectionString);
+    }
+    else
+    {
+        options.UseSqlServer(connectionString);
+    }
+});
 
 // 2. Add ASP.NET Core Identity with ApplicationUser & simplified password options (allowing "123")
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -36,6 +61,14 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
+// Configure Forwarded Headers for reverse proxies (Render, Railway, etc.)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 // 4. Add MVC Controllers and Views
 builder.Services.AddControllersWithViews();
 
@@ -55,6 +88,9 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
+
+// Forwarded headers must run before HttpsRedirection
+app.UseForwardedHeaders();
 
 // 6. HTTP Pipeline
 if (!app.Environment.IsDevelopment())

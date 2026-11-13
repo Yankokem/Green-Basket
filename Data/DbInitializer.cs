@@ -16,18 +16,21 @@ namespace Green_Basket.Data
             await context.Database.EnsureCreatedAsync();
 
             // Ensure FullName column exists if table was created previously without it
-            try
+            if (context.Database.IsSqlServer())
             {
-                await context.Database.ExecuteSqlRawAsync(@"
-                    IF COL_LENGTH('AspNetUsers', 'FullName') IS NULL 
-                    BEGIN
-                        ALTER TABLE AspNetUsers ADD FullName nvarchar(100) NOT NULL DEFAULT '';
-                    END
-                ");
-            }
-            catch
-            {
-                // Ignore if already handled by EF Core
+                try
+                {
+                    await context.Database.ExecuteSqlRawAsync(@"
+                        IF COL_LENGTH('AspNetUsers', 'FullName') IS NULL 
+                        BEGIN
+                            ALTER TABLE AspNetUsers ADD FullName nvarchar(100) NOT NULL DEFAULT '';
+                        END
+                    ");
+                }
+                catch
+                {
+                    // Ignore if already handled by EF Core
+                }
             }
 
             // 1. Seed Roles
