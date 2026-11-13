@@ -21,6 +21,14 @@ if (!string.IsNullOrEmpty(port))
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? "Data Source=GreenBasket_DRP.db";
 
+// Remove accidental newlines or extra whitespace from cloud dashboard inputs
+connectionString = connectionString.Replace("\r", "").Replace("\n", "").Trim();
+
+// Fix common typos in connection string keys (e.g. "usernam e" -> "Username")
+connectionString = System.Text.RegularExpressions.Regex.Replace(connectionString, @"\busernam\s+e\b", "Username", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+connectionString = System.Text.RegularExpressions.Regex.Replace(connectionString, @"\buser\s+name\b", "Username", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+connectionString = System.Text.RegularExpressions.Regex.Replace(connectionString, @"\bpass\s+word\b", "Password", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
 // Fall back to SQLite if running on Linux/Docker and connection string still points to Windows LocalDB
 if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
     && connectionString.Contains("localdb", StringComparison.OrdinalIgnoreCase))
