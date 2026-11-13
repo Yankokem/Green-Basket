@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 using Green_Basket.Data;
 using Green_Basket.Models;
 
+// Enable legacy timestamp behavior for Npgsql/PostgreSQL DateTime compatibility
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Support dynamic port from cloud hosts like Render
@@ -25,9 +28,52 @@ if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
     connectionString = "Data Source=GreenBasket_DRP.db";
 }
 
+bool isPostgres = connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase)
+               || connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase)
+               || connectionString.Contains("Host=", StringComparison.OrdinalIgnoreCase)
+               || connectionString.Contains("Server=db.", StringComparison.OrdinalIgnoreCase)
+               || connectionString.Contains("supabase", StringComparison.OrdinalIgnoreCase);
+
+if (isPostgres)
+{
+    // Convert postgresql:// URI format to Npgsql key-value format if needed
+    if (connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
+        connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+    {
+        try
+        {
+            var uri = new Uri(connectionString);
+            var userInfo = uri.UserInfo.Split(new[] { ':' }, 2);
+            var user = Uri.UnescapeDataString(userInfo[0]);
+            var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+            var host = uri.Host;
+            var dbPort = uri.Port > 0 ? uri.Port : 5432;
+            var database = uri.AbsolutePath.TrimStart('/');
+            if (string.IsNullOrEmpty(database)) database = "postgres";
+
+            connectionString = $"Host={host};Port={dbPort};Database={database};Username={user};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+        }
+        catch
+        {
+            // Use raw string if URI parse fails
+        }
+    }
+    else
+    {
+        if (!connectionString.Contains("SSL Mode", StringComparison.OrdinalIgnoreCase))
+        {
+            connectionString += ";SSL Mode=Require;Trust Server Certificate=true;";
+        }
+    }
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    if (connectionString.Contains(".db") || connectionString.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
+    if (isPostgres)
+    {
+        options.UseNpgsql(connectionString);
+    }
+    else if (connectionString.Contains(".db") || connectionString.StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
     {
         options.UseSqlite(connectionString);
     }
