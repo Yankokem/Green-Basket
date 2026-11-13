@@ -36,6 +36,17 @@ bool isPostgres = connectionString.StartsWith("postgres://", StringComparison.Or
 
 if (isPostgres)
 {
+    // Auto-fix IPv6-only Supabase direct host to IPv4 pooler host for cloud compatibility
+    if (connectionString.Contains("db.cxonxfiplynpyrxqdfvy.supabase.co", StringComparison.OrdinalIgnoreCase))
+    {
+        connectionString = connectionString.Replace("db.cxonxfiplynpyrxqdfvy.supabase.co", "aws-0-ap-southeast-2.pooler.supabase.com");
+        if (!connectionString.Contains("postgres.cxonxfiplynpyrxqdfvy", StringComparison.OrdinalIgnoreCase))
+        {
+            connectionString = connectionString.Replace("postgres:", "postgres.cxonxfiplynpyrxqdfvy:");
+            connectionString = connectionString.Replace("Username=postgres;", "Username=postgres.cxonxfiplynpyrxqdfvy;");
+        }
+    }
+
     // Convert postgresql:// URI format to Npgsql key-value format if needed
     if (connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
         connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Green_Basket.Models;
 
 namespace Green_Basket.Data
@@ -13,7 +14,28 @@ namespace Green_Basket.Data
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             // Ensure database schema is created
-            await context.Database.EnsureCreatedAsync();
+            try
+            {
+                await context.Database.EnsureCreatedAsync();
+            }
+            catch
+            {
+                // Ignore if EnsureCreated encountered existing schema
+            }
+
+            // For PostgreSQL / Supabase where existing schemas cause EnsureCreated to skip table creation
+            try
+            {
+                var databaseCreator = Microsoft.EntityFrameworkCore.Infrastructure.AccessorExtensions.GetService<Microsoft.EntityFrameworkCore.Storage.IDatabaseCreator>(context.Database) as Microsoft.EntityFrameworkCore.Storage.IRelationalDatabaseCreator;
+                if (databaseCreator != null)
+                {
+                    await databaseCreator.CreateTablesAsync();
+                }
+            }
+            catch
+            {
+                // Tables already exist or already created
+            }
 
             // Ensure FullName column exists if table was created previously without it
             if (context.Database.IsSqlServer())
