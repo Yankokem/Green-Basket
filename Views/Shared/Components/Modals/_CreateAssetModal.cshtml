@@ -1,0 +1,71 @@
+@using Green_Basket.Models.ViewModels
+
+<div id="createAssetModal" data-modal-root class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6">
+    <div data-modal-backdrop class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] opacity-0 transition-opacity duration-200 ease-out"></div>
+    <div data-modal-panel class="relative z-10 w-full max-w-2xl max-h-[90vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden opacity-0 scale-95 translate-y-3 transition-all duration-200 ease-out">
+        <partial name="Components/Modals/_ModalHeader" model='new[] { "Hospital Assets", "Add New Asset", "Register an IT system to establish disaster recovery targets." }' />
+
+        <form asp-controller="Assets" asp-action="Create" method="post" class="p-6 space-y-4 overflow-y-auto">
+            @Html.AntiForgeryToken()
+
+            <div>
+                <label class="form-label">Asset / System Name</label>
+                <input name="Name" required maxlength="150" class="form-input" placeholder="e.g. Epic Electronic Medical Records (EMR)" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">System Type / Category</label>
+                    <input name="Type" required maxlength="100" class="form-input" placeholder="e.g. Clinical Core, PACS, Pharmacy" />
+                </div>
+
+                <div>
+                    <label class="form-label">Priority Level</label>
+                    <select name="Priority" required class="form-select">
+                        <option value="Critical">Critical (Tier 1 - Immediate)</option>
+                        <option value="High">High (Tier 2 - Under 4 Hours)</option>
+                        <option value="Medium">Medium (Tier 3 - Under 12 Hours)</option>
+                        <option value="Low">Low (Tier 4 - Non-Urgent)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="form-label">System Owner / Responsible Lead</label>
+                <input name="Owner" required maxlength="100" class="form-input" placeholder="e.g. Dr. Sarah Chen" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-[#f4f6f2]/70 border border-[#426246]/15">
+                <div>
+                    <label class="form-label">RTO Target (Minutes)</label>
+                    <div class="relative">
+                        <input name="RtoMinutes" type="number" min="1" required class="form-input pr-12 font-mono" placeholder="60" />
+                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">min</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Maximum acceptable downtime</p>
+                </div>
+
+                <div>
+                    <label class="form-label">RPO Target (Minutes)</label>
+                    <div class="relative">
+                        <input name="RpoMinutes" type="number" min="0" required class="form-input pr-12 font-mono" placeholder="15" />
+                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">min</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Maximum tolerable data loss</p>
+                </div>
+            </div>
+
+            <div>
+                <label class="form-label">Backup Dependency / Source</label>
+                <input name="BackupDependency" required maxlength="255" class="form-input" placeholder="e.g. PureStorage SAN Snapshot, Azure DR Replica" />
+            </div>
+
+            <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
+                <button type="button" data-modal-close class="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer">
+                    Cancel
+                </button>
+                <partial name="Components/_Button" model='new ButtonModel { Text = "Save Asset", Icon = "check", Variant = "primary", IsSubmit = true }' />
+            </div>
+        </form>
+    </div>
+</div>

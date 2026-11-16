@@ -7,106 +7,110 @@
     var currentAsset = ViewBag.CurrentAsset as Green_Basket.Models.Asset;
 }
 
-<partial name="Components/_PageHeader" model='new PageHeaderModel { 
-    Title = currentAsset != null ? $"Tasks — {currentAsset.Name}" : "Disaster Recovery Action Items & Tasks", 
+<partial name="Components/_PageHeader" model='new PageHeaderModel {
+    Title = currentAsset != null ? $"Tasks — {currentAsset.Name}" : "Disaster Recovery Action Items & Tasks",
     Subtitle = "Actionable preparation, configuration, and remediation tasks assigned across IT infrastructure.",
+    BackUrl = currentAsset != null ? Url.Action("Index", "RecoveryTasks") : null,
     ActionText = "New Task",
-    ActionUrl = currentAsset != null ? Url.Action("Create", "RecoveryTasks", new { assetId = currentAsset.Id }) : Url.Action("Create", "RecoveryTasks"),
+    ActionModalTarget = "createTaskModal",
+    ActionModalAssetId = currentAsset?.Id,
     ActionIcon = "check-square",
     RequiredRole = "Admin,DRCoordinator"
 }' />
 
-@if (currentAsset != null)
-{
-    <div class="mb-4">
-        <a asp-action="Index" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-emerald-700 transition-colors">
-            <i data-lucide="filter-x" class="w-3.5 h-3.5"></i>
-            <span>Filtered by asset: <strong>@currentAsset.Name</strong> (Click to view all)</span>
-        </a>
-    </div>
-}
-
-<div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
-    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
-        <div class="flex items-center gap-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-600">
-                Action Items
-            </span>
-            <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-200/70 text-slate-700">
-                @Model.Count()
-            </span>
-        </div>
-    </div>
+<div id="tasks-table" class="gb-card overflow-hidden">
+    <partial name="Components/_TableToolbar" model='new TableToolbarModel {
+        TargetId = "tasks-table",
+        Title = "Action Items",
+        Count = Model.Count(),
+        SearchPlaceholder = "Search task, assignee, or asset...",
+        FilterLabel = "All Statuses",
+        FilterOptions = new List<string> { "Pending", "In Progress", "Done" }
+    }' />
 
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="border-b border-slate-200 bg-slate-50/80 text-slate-600 text-xs uppercase tracking-wider font-bold">
-                    <th class="py-4 px-6 whitespace-nowrap w-36">Status</th>
-                    <th class="py-4 px-6 whitespace-nowrap min-w-[300px]">Task Description</th>
-                    <th class="py-4 px-6 whitespace-nowrap min-w-[240px]">Linked Hospital System</th>
-                    <th class="py-4 px-6 whitespace-nowrap min-w-[200px]">Assigned Individual</th>
-                    <th class="py-4 px-6 whitespace-nowrap w-36">Due Date</th>
-                    <th class="py-4 pr-8 pl-6 text-right whitespace-nowrap w-32">Actions</th>
+                <tr class="border-b border-slate-200 bg-slate-50/60 text-slate-500 text-[11px] uppercase tracking-wider font-bold">
+                    <th class="py-3.5 px-6 whitespace-nowrap w-36">Status</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap min-w-[280px]">Task Description</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap min-w-[220px]">Linked Hospital System</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap min-w-[180px]">Assigned Individual</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap w-36">Due Date</th>
+                    <th class="py-3.5 pr-6 pl-4 text-right whitespace-nowrap w-32">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="6" class="text-center py-16 text-slate-400">
-                            <div class="flex flex-col items-center justify-center gap-2">
-                                <i data-lucide="check-square" class="w-10 h-10 text-slate-300 stroke-[1.5]"></i>
-                                <p class="text-sm font-medium text-slate-500">No recovery tasks logged yet.</p>
-                                <p class="text-xs text-slate-400">Click "New Task" above to assign readiness action items.</p>
-                            </div>
+                        <td colspan="6">
+                            <partial name="Components/_EmptyState" model='new EmptyStateModel {
+                                Icon = "check-square",
+                                Title = "No recovery tasks logged yet.",
+                                Subtitle = "Assign readiness or corrective remediation action items.",
+                                ActionText = "New Task",
+                                ActionModalTarget = "createTaskModal",
+                                ActionModalAssetId = currentAsset?.Id,
+                                RequiredRole = "Admin,DRCoordinator"
+                            }' />
                         </td>
                     </tr>
                 }
-                @foreach (var item in Model)
+                else
                 {
-                    <tr class="hover:bg-slate-50/70 transition-colors group">
-                        <td class="py-4 px-6 whitespace-nowrap align-middle">
-                            <partial name="Components/_Badge" model='new BadgeModel { Value = item.Status, Type = "status" }' />
-                        </td>
-                        <td class="py-4 px-6 align-middle font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
-                            <a asp-action="Details" asp-route-id="@item.Id" class="block leading-snug">
-                                @item.Title
-                            </a>
-                        </td>
-                        <td class="py-4 px-6 whitespace-nowrap align-middle">
-                            <a asp-controller="Assets" asp-action="Details" asp-route-id="@item.AssetId" class="text-xs font-semibold text-emerald-700 hover:underline">
-                                @item.Asset?.Name
-                            </a>
-                        </td>
-                        <td class="py-4 px-6 whitespace-nowrap text-xs font-medium text-slate-600 align-middle">
-                            @item.AssignedTo
-                        </td>
-                        <td class="py-4 px-6 whitespace-nowrap text-xs font-mono font-medium text-slate-500 align-middle">
-                            @(item.DueDate.HasValue ? item.DueDate.Value.ToString("yyyy-MM-dd") : "—")
-                        </td>
-                        <td class="py-4 pr-8 pl-6 text-right whitespace-nowrap align-middle">
-                            <div class="inline-flex items-center justify-end gap-1.5">
-                                <a asp-action="Details" asp-route-id="@item.Id" class="p-2 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all" title="View Details">
-                                    <i data-lucide="eye" class="w-4 h-4"></i>
-                                </a>
-                                @if (User.IsInRole("Admin") || User.IsInRole("DRCoordinator"))
-                                {
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="p-2 text-slate-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-all" title="Edit">
-                                        <i data-lucide="pencil" class="w-4 h-4"></i>
-                                    </a>
-                                }
-                                @if (User.IsInRole("Admin"))
-                                {
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="p-2 text-slate-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-all" title="Delete">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </a>
-                                }
-                            </div>
+                    <tr data-filter-empty class="hidden">
+                        <td colspan="6" class="py-12 text-center text-xs text-slate-400">
+                            No matching tasks found for the current filter.
                         </td>
                     </tr>
+                    @foreach (var item in Model)
+                    {
+                        <tr data-filter-item
+                            data-filter-value="@item.Status.ToLower()"
+                            data-search-text="@($"{item.Title} {item.Asset?.Name} {item.AssignedTo} {item.Status}")"
+                            class="hover:bg-[#f4f6f2]/50 transition-colors group">
+                            <td class="py-4 px-6 whitespace-nowrap align-middle">
+                                <partial name="Components/_Badge" model='new BadgeModel { Value = item.Status, Type = "status" }' />
+                            </td>
+                            <td class="py-4 px-6 align-middle font-semibold text-slate-900 group-hover:text-[#426246] transition-colors">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="block leading-snug">
+                                    @item.Title
+                                </a>
+                            </td>
+                            <td class="py-4 px-6 whitespace-nowrap align-middle">
+                                <a asp-controller="Assets" asp-action="Details" asp-route-id="@item.AssetId" class="text-xs font-semibold text-[#426246] hover:underline">
+                                    @item.Asset?.Name
+                                </a>
+                            </td>
+                            <td class="py-4 px-6 whitespace-nowrap text-xs font-medium text-slate-600 align-middle">
+                                @item.AssignedTo
+                            </td>
+                            <td class="py-4 px-6 whitespace-nowrap text-xs font-mono font-medium text-slate-500 align-middle">
+                                @(item.DueDate.HasValue ? item.DueDate.Value.ToString("yyyy-MM-dd") : "—")
+                            </td>
+                            <td class="py-4 pr-6 pl-4 text-right whitespace-nowrap align-middle">
+                                <div class="inline-flex items-center justify-end gap-1">
+                                    <partial name="Components/_Button" model='new ButtonModel { Href = Url.Action("Details", new { id = item.Id }), Variant = "ghost", Size = "icon", Icon = "eye", Title = "View Details", CustomClass = "hover:text-[#426246] hover:bg-[#f4f6f2]" }' />
+                                    @if (User.IsInRole("Admin") || User.IsInRole("DRCoordinator"))
+                                    {
+                                        <partial name="Components/_Button" model='new ButtonModel { Href = Url.Action("Edit", new { id = item.Id }), Variant = "ghost", Size = "icon", Icon = "pencil", Title = "Edit", CustomClass = "hover:text-amber-700 hover:bg-amber-50" }' />
+                                    }
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <partial name="Components/_Button" model='new ButtonModel { Href = Url.Action("Delete", new { id = item.Id }), Variant = "ghost", Size = "icon", Icon = "trash-2", Title = "Delete", CustomClass = "hover:text-rose-700 hover:bg-rose-50" }' />
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
     </div>
 </div>
+
+@if (User.IsInRole("Admin") || User.IsInRole("DRCoordinator"))
+{
+    <partial name="Components/Modals/_CreateTaskModal" />
+}

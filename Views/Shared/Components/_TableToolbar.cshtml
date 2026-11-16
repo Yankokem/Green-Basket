@@ -1,0 +1,43 @@
+@model Green_Basket.Models.ViewModels.TableToolbarModel
+
+<div data-toolbar-target="@Model.TargetId"
+     class="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+    <div class="flex items-center gap-2.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-600">
+            @Model.Title
+        </span>
+        <span data-table-count
+              class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-[#e6ede6] text-[#355038]">
+            @Model.Count
+        </span>
+        @if (!string.IsNullOrEmpty(Model.RightNote))
+        {
+            <span class="hidden xl:inline-flex items-center gap-1.5 text-xs text-slate-400 ml-2 pl-3 border-l border-slate-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#426246]"></span>
+                <span>@Model.RightNote</span>
+            </span>
+        }
+    </div>
+
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+        <div class="relative min-w-[220px] sm:w-64">
+            <input type="search"
+                   data-table-search
+                   placeholder="@Model.SearchPlaceholder"
+                   class="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#426246] focus:ring-2 focus:ring-[#426246]/15 transition-all" />
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2"></i>
+        </div>
+
+        @if (Model.FilterOptions != null && Model.FilterOptions.Any())
+        {
+            <select data-table-filter
+                    class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 focus:outline-none focus:border-[#426246] focus:ring-2 focus:ring-[#426246]/15 transition-all">
+                <option value="">@Model.FilterLabel</option>
+                @foreach (var opt in Model.FilterOptions)
+                {
+                    <option value="@opt.ToLower()">@opt</option>
+                }
+            </select>
+        }
+    </div>
+</div>

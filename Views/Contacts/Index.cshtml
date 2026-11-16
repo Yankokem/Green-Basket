@@ -5,80 +5,98 @@
     ViewData["Title"] = "Emergency Contacts";
     Layout = "_Layout";
     var currentAsset = ViewBag.CurrentAsset as Green_Basket.Models.Asset;
+    var assetOptions = Model.Select(c => c.Asset?.Name).Where(n => !string.IsNullOrEmpty(n)).Select(n => n!).Distinct().OrderBy(n => n).ToList();
 }
 
-<partial name="Components/_PageHeader" model='new PageHeaderModel { 
-    Title = currentAsset != null ? $"Contacts — {currentAsset.Name}" : "Disaster Recovery Emergency Contacts", 
+<partial name="Components/_PageHeader" model='new PageHeaderModel {
+    Title = currentAsset != null ? $"Contacts — {currentAsset.Name}" : "Disaster Recovery Emergency Contacts",
     Subtitle = "System custodians, database administrators, and vendor support personnel.",
+    BackUrl = currentAsset != null ? Url.Action("Index", "Contacts") : null,
     ActionText = "New Contact",
-    ActionUrl = currentAsset != null ? Url.Action("Create", "Contacts", new { assetId = currentAsset.Id }) : Url.Action("Create", "Contacts"),
+    ActionModalTarget = "createContactModal",
+    ActionModalAssetId = currentAsset?.Id,
     ActionIcon = "user-plus",
     RequiredRole = "Admin,DRCoordinator"
 }' />
 
-@if (currentAsset != null)
-{
-    <div class="mb-6">
-        <a asp-action="Index" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-emerald-700 transition-colors">
-            <i data-lucide="filter-x" class="w-3.5 h-3.5"></i>
-            <span>Filtered by asset: <strong>@currentAsset.Name</strong> (Click to view all)</span>
-        </a>
-    </div>
-}
+<div id="contacts-list" class="gb-card overflow-hidden">
+    <partial name="Components/_TableToolbar" model='new TableToolbarModel {
+        TargetId = "contacts-list",
+        Title = "Directory Contacts",
+        Count = Model.Count(),
+        SearchPlaceholder = "Search name, role, phone, email...",
+        FilterLabel = "All Assets",
+        FilterOptions = assetOptions
+    }' />
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @if (!Model.Any())
     {
-        <div class="col-span-full bg-white rounded-2xl p-16 text-center text-slate-400 border border-slate-200/80 shadow-sm">
-            <i data-lucide="users" class="w-10 h-10 mx-auto text-slate-300 mb-2 stroke-[1.5]"></i>
-            <p class="text-sm font-medium text-slate-500">No emergency contacts listed yet.</p>
-            <p class="text-xs text-slate-400">Click "New Contact" to add emergency personnel.</p>
-        </div>
+        <partial name="Components/_EmptyState" model='new EmptyStateModel {
+            Icon = "users",
+            Title = "No emergency contacts listed yet.",
+            Subtitle = "Add system custodians or vendor technical leads for incident escalation.",
+            ActionText = "New Contact",
+            ActionModalTarget = "createContactModal",
+            ActionModalAssetId = currentAsset?.Id,
+            RequiredRole = "Admin,DRCoordinator"
+        }' />
     }
-    @foreach (var c in Model)
+    else
     {
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 flex flex-col justify-between hover:shadow-md hover:border-slate-300/80 transition-all group">
-            <div>
-                <div class="flex items-start justify-between gap-3">
+        <div data-filter-empty class="hidden py-12 text-center text-xs text-slate-400">
+            No matching contacts found for the current filter.
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-6">
+            @foreach (var c in Model)
+            {
+                <div data-filter-item
+                     data-filter-value="@(c.Asset?.Name?.ToLower() ?? "")"
+                     data-search-text="@($"{c.Name} {c.Role} {c.Email} {c.Phone} {c.Asset?.Name}")"
+                     class="rounded-xl border border-slate-200/90 bg-slate-50/40 hover:bg-white hover:border-[#426246]/30 p-5 flex flex-col justify-between transition-all group">
                     <div>
-                        <span class="inline-block text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60 mb-2.5">
-                            @c.Asset?.Name
-                        </span>
-                        <h3 class="font-bold text-slate-900 text-lg group-hover:text-emerald-700 transition-colors">@c.Name</h3>
-                        <p class="text-xs text-slate-500 font-semibold mt-0.5">@c.Role</p>
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <span class="inline-block text-[11px] font-semibold text-[#355038] bg-[#f4f6f2] px-2.5 py-0.5 rounded-md border border-[#426246]/20 mb-2.5">
+                                    @c.Asset?.Name
+                                </span>
+                                <h3 class="font-semibold text-slate-900 text-base group-hover:text-[#426246] transition-colors truncate">@c.Name</h3>
+                                <p class="text-xs text-slate-500 font-medium mt-0.5">@c.Role</p>
+                            </div>
+
+                            <div class="flex items-center gap-0.5 shrink-0">
+                                @if (User.IsInRole("Admin") || User.IsInRole("DRCoordinator"))
+                                {
+                                    <partial name="Components/_Button" model='new ButtonModel { Href = Url.Action("Edit", new { id = c.Id }), Variant = "ghost", Size = "icon", Icon = "pencil", Title = "Edit Contact", CustomClass = "hover:text-amber-700 hover:bg-amber-50" }' />
+                                }
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <partial name="Components/_Button" model='new ButtonModel { Href = Url.Action("Delete", new { id = c.Id }), Variant = "ghost", Size = "icon", Icon = "trash-2", Title = "Delete Contact", CustomClass = "hover:text-rose-700 hover:bg-rose-50" }' />
+                                }
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="flex items-center gap-1 shrink-0">
-                        @if (User.IsInRole("Admin") || User.IsInRole("DRCoordinator"))
-                        {
-                            <a asp-action="Edit" asp-route-id="@c.Id" class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Edit Contact">
-                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                            </a>
-                        }
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <a asp-action="Delete" asp-route-id="@c.Id" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete Contact">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </a>
-                        }
+                    <div class="mt-5 pt-4 border-t border-slate-100 space-y-2 text-xs text-slate-600">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 text-slate-500">
+                                <i data-lucide="phone" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <a href="tel:@c.Phone" class="hover:text-[#426246] font-mono font-medium">@c.Phone</a>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 text-slate-500">
+                                <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <a href="mailto:@c.Email" class="hover:text-[#426246] truncate">@c.Email</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="mt-6 pt-4 border-t border-slate-100 space-y-2.5 text-xs text-slate-600">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 text-slate-500">
-                        <i data-lucide="phone" class="w-3.5 h-3.5"></i>
-                    </div>
-                    <a href="tel:@c.Phone" class="hover:text-emerald-600 font-mono font-semibold">@c.Phone</a>
-                </div>
-                <div class="flex items-center gap-2.5">
-                    <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 text-slate-500">
-                        <i data-lucide="mail" class="w-3.5 h-3.5"></i>
-                    </div>
-                    <a href="mailto:@c.Email" class="hover:text-emerald-600 truncate font-medium">@c.Email</a>
-                </div>
-            </div>
+            }
         </div>
     }
 </div>
+
+@if (User.IsInRole("Admin") || User.IsInRole("DRCoordinator"))
+{
+    <partial name="Components/Modals/_CreateContactModal" />
+}

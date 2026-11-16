@@ -1,14 +1,15 @@
 @model ErrorViewModel
+@using Green_Basket.Models.ViewModels
 @{
     ViewData["Title"] = "Application Error";
     Layout = "_Layout";
 }
 
-<div class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-rose-200 text-center">
+<div class="max-w-xl mx-auto gb-card border-rose-200 p-8 text-center mt-8">
     <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4 border border-rose-100">
-        <i data-lucide="alert-octagon" class="w-8 h-8"></i>
+        <i data-lucide="alert-octagon" class="w-7 h-7"></i>
     </div>
-    <h1 class="text-2xl font-bold text-slate-900 mb-2">Unexpected Application Error</h1>
+    <h1 class="text-xl font-bold text-slate-900 mb-2">Unexpected Application Error</h1>
     <p class="text-sm text-slate-500 mb-6">
         An error occurred while processing your request. Please check the logs or return to the dashboard.
     </p>
@@ -21,9 +22,6 @@
     }
 
     <div>
-        <a asp-controller="Assets" asp-action="Index" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            <span>Return to Dashboard</span>
-        </a>
+        <partial name="Components/_Button" model='new ButtonModel { Text = "Return to Dashboard", Href = Url.Action("Index", "Assets"), Variant = "primary", Icon = "arrow-left" }' />
     </div>
 </div>

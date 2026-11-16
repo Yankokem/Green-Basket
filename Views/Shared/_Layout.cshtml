@@ -1,113 +1,40 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="en" class="h-full bg-[#f8faf8]">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] — Green Basket DR Planner</title>
-    
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#ecfdf5',
-                            100: '#d1fae5',
-                            500: '#10b981',
-                            600: '#059669',
-                            700: '#047857',
-                            900: '#064e3b',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <style>
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        }
-
-        /* Modern consistent Form controls */
-        .form-label {
-            display: block;
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: #334155;
-            margin-bottom: 0.375rem;
-        }
-        .form-input, .form-select, .form-textarea {
-            width: 100%;
-            border-radius: 0.5rem;
-            border: 1px solid #cbd5e1;
-            padding: 0.5625rem 0.875rem;
-            font-size: 0.875rem;
-            background-color: #ffffff;
-            color: #0f172a;
-            transition: all 0.15s ease;
-        }
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: #059669;
-            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
-        }
-        .text-danger {
-            color: #e11d48;
-            font-size: 0.75rem;
-            margin-top: 0.25rem;
-            display: block;
-        }
-
-        /* Clean scrollbar for wide data tables */
-        .overflow-x-auto::-webkit-scrollbar {
-            height: 8px;
-        }
-        .overflow-x-auto::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 4px;
-        }
-        .overflow-x-auto::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
+    <partial name="_ThemeHead" />
 </head>
-<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800 antialiased selection:bg-emerald-500 selection:text-white">
-    <!-- Top Navigation Bar (No Sidebar) -->
+<body class="min-h-screen flex flex-col bg-[#f8faf8] text-slate-800 antialiased selection:bg-[#426246] selection:text-white">
+    <!-- Top Navigation App Shell -->
     <partial name="_TopNavbar" />
 
-    <!-- Main Content Area with generous container width -->
+    <!-- Main Content Area -->
     <main class="flex-1 py-8 px-4 sm:px-6 lg:px-10">
         <div class="max-w-[1536px] mx-auto">
-            <!-- Toast Feedback / TempData notifications -->
             @if (TempData["SuccessMessage"] != null)
             {
-                <div class="mb-6 rounded-xl bg-emerald-50 border border-emerald-200/80 p-4 flex items-center justify-between text-emerald-800 shadow-sm animate-fade-in">
+                <div class="mb-6 rounded-xl bg-[#f4f6f2] border border-[#426246]/25 px-4 py-3.5 flex items-center justify-between text-[#293e2c] shadow-xs">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0 text-emerald-700">
-                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                        <div class="w-8 h-8 rounded-lg bg-[#e6ede6] flex items-center justify-center shrink-0 text-[#426246]">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
                         </div>
                         <span class="text-sm font-medium">@TempData["SuccessMessage"]</span>
                     </div>
-                    <button onclick="this.parentElement.remove()" class="p-1 text-emerald-600 hover:text-emerald-800 rounded-md transition-colors">
+                    <button onclick="this.parentElement.remove()" class="p-1 text-[#426246]/70 hover:text-[#293e2c] rounded-md transition-colors cursor-pointer">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            }
+
+            @if (TempData["WarningMessage"] != null)
+            {
+                <div class="mb-6 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3.5 flex items-center justify-between text-amber-900 shadow-xs">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 text-amber-700">
+                            <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-sm font-medium">@TempData["WarningMessage"]</span>
+                    </div>
+                    <button onclick="this.parentElement.remove()" class="p-1 text-amber-600 hover:text-amber-900 rounded-md transition-colors cursor-pointer">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -115,14 +42,14 @@
 
             @if (TempData["ErrorMessage"] != null)
             {
-                <div class="mb-6 rounded-xl bg-rose-50 border border-rose-200/80 p-4 flex items-center justify-between text-rose-800 shadow-sm animate-fade-in">
+                <div class="mb-6 rounded-xl bg-rose-50 border border-rose-200 px-4 py-3.5 flex items-center justify-between text-rose-800 shadow-xs">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center shrink-0 text-rose-700">
-                            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                        <div class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center shrink-0 text-rose-600">
+                            <i data-lucide="alert-circle" class="w-4 h-4"></i>
                         </div>
                         <span class="text-sm font-medium">@TempData["ErrorMessage"]</span>
                     </div>
-                    <button onclick="this.parentElement.remove()" class="p-1 text-rose-600 hover:text-rose-800 rounded-md transition-colors">
+                    <button onclick="this.parentElement.remove()" class="p-1 text-rose-600 hover:text-rose-800 rounded-md transition-colors cursor-pointer">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -132,25 +59,23 @@
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-slate-200 bg-white py-5 mt-auto">
-        <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3">
+    <!-- Quiet Footer -->
+    <footer class="border-t border-slate-200/80 bg-white py-4 mt-auto">
+        <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
             <div class="flex items-center gap-2.5">
-                <div class="w-5 h-5 rounded bg-emerald-600 text-white flex items-center justify-center">
-                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-                </div>
-                <span class="font-bold text-slate-800">Green Basket</span>
-                <span class="text-slate-300">|</span>
+                <img src="~/images/greenbasket-logo-2x2.svg" alt="GB" class="h-6 w-6 shrink-0" />
+                <span class="font-semibold text-slate-700">Green Basket</span>
+                <span class="text-slate-300">·</span>
                 <span>Hospital Disaster Recovery Planner</span>
-                <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-mono text-[10px] font-semibold">System #37</span>
+                <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-mono text-[10px] font-medium">System #37</span>
             </div>
-            <div class="text-slate-400">
-                Hospital IT Systems Preparedness &amp; Continuity Platform
+            <div>
+                Hospital IT Preparedness &amp; Continuity Platform
             </div>
         </div>
     </footer>
 
-    <!-- Initialize Lucide Icons -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
         lucide.createIcons();
     </script>

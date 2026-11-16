@@ -33,6 +33,7 @@ namespace Green_Basket.Controllers
                 .ThenBy(t => t.DueDate)
                 .ToListAsync();
 
+            ViewData["AssetId"] = new SelectList(await _context.Assets.OrderBy(a => a.Name).ToListAsync(), "Id", "Name", assetId);
             return View(tasks);
         }
 
@@ -59,13 +60,17 @@ namespace Green_Basket.Controllers
 
         // GET: RecoveryTasks/Create
         [Authorize(Roles = "Admin,DRCoordinator")]
-        public IActionResult Create(int? assetId)
+        public IActionResult Create(int? assetId, string? suggestedTitle = null)
         {
             ViewData["AssetId"] = new SelectList(_context.Assets.OrderBy(a => a.Name), "Id", "Name", assetId);
             var task = new RecoveryTask { DueDate = DateTime.Today.AddDays(7), Status = "Pending" };
             if (assetId.HasValue)
             {
                 task.AssetId = assetId.Value;
+            }
+            if (!string.IsNullOrWhiteSpace(suggestedTitle))
+            {
+                task.Title = suggestedTitle;
             }
             return View(task);
         }
@@ -122,7 +127,27 @@ namespace Green_Basket.Controllers
                 {
                     _context.Update(recoveryTask);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = $"Task '{recoveryTask.Title}' updated.";
+
+                    if (string.Equals(recoveryTask.Status, "Done", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var asset = await _context.Assets
+                            .Include(a => a.RecoveryTests)
+                            .Include(a => a.RecoveryTasks)
+                            .FirstOrDefaultAsync(a => a.Id == recoveryTask.AssetId);
+
+                        if (asset != null && asset.OpenTaskCount == 0 && asset.ReadinessStatus == "At Risk")
+                        {
+                            TempData["SuccessMessage"] = $"All remediation tasks for '{asset.Name}' are Done — ready to log a re-test to verify RTO/RPO compliance.";
+                        }
+                        else
+                        {
+                            TempData["SuccessMessage"] = $"Task '{recoveryTask.Title}' updated.";
+                        }
+                    }
+                    else
+                    {
+                        TempData["SuccessMessage"] = $"Task '{recoveryTask.Title}' updated.";
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {

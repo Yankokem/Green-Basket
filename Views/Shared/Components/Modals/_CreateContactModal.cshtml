@@ -1,0 +1,48 @@
+@using Green_Basket.Models.ViewModels
+
+<div id="createContactModal" data-modal-root class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6">
+    <div data-modal-backdrop class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] opacity-0 transition-opacity duration-200 ease-out"></div>
+    <div data-modal-panel class="relative z-10 w-full max-w-2xl max-h-[90vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden opacity-0 scale-95 translate-y-3 transition-all duration-200 ease-out">
+        <partial name="Components/Modals/_ModalHeader" model='new[] { "Emergency Contacts", "Add Recovery Contact", "Register a custodian, vendor contact, or system administrator." }' />
+
+        <form asp-controller="Contacts" asp-action="Create" method="post" class="p-6 space-y-4 overflow-y-auto">
+            @Html.AntiForgeryToken()
+
+            <div>
+                <label class="form-label">Linked Hospital Asset</label>
+                <select name="AssetId" required class="form-select" asp-items="ViewBag.AssetId">
+                    <option value="">-- Select Target Asset --</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="form-label">Full Name</label>
+                <input name="Name" required maxlength="100" class="form-input" placeholder="e.g. Dr. Sarah Chen, James Alvarez" />
+            </div>
+
+            <div>
+                <label class="form-label">Role / Responsibility</label>
+                <input name="Role" required maxlength="100" class="form-input" placeholder="e.g. Lead DBA, PACS Engineer, Vendor Technical Lead" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Emergency Phone</label>
+                    <input name="Phone" required maxlength="30" class="form-input font-mono" placeholder="+1 (555) 019-2834" />
+                </div>
+
+                <div>
+                    <label class="form-label">Email Address</label>
+                    <input name="Email" type="email" required maxlength="100" class="form-input" placeholder="custodian@hospital.org" />
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
+                <button type="button" data-modal-close class="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer">
+                    Cancel
+                </button>
+                <partial name="Components/_Button" model='new ButtonModel { Text = "Save Contact", Icon = "check", Variant = "primary", IsSubmit = true }' />
+            </div>
+        </form>
+    </div>
+</div>

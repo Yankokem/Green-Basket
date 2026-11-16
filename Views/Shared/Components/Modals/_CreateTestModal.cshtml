@@ -1,0 +1,164 @@
+@using Green_Basket.Models.ViewModels
+
+@{
+    var targetsJson = ViewBag.AssetTargetsJson as string ?? "{}";
+    var todayStr = DateTime.Today.ToString("yyyy-MM-dd");
+}
+
+<div id="createTestModal" data-modal-root class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6">
+    <div data-modal-backdrop class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] opacity-0 transition-opacity duration-200 ease-out"></div>
+    <div data-modal-panel class="relative z-10 w-full max-w-2xl max-h-[90vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden opacity-0 scale-95 translate-y-3 transition-all duration-200 ease-out">
+        <partial name="Components/Modals/_ModalHeader" model='new[] { "Recovery Tests", "Record Disaster Recovery Test", "Log simulated failover metrics. Breached RTO/RPO targets automatically trigger failure handling." }' />
+
+        <form asp-controller="RecoveryTests" asp-action="Create" method="post" class="p-6 space-y-4 overflow-y-auto">
+            @Html.AntiForgeryToken()
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Target System / Asset</label>
+                    <select name="AssetId" id="modalTestAssetSelect" required class="form-select" asp-items="ViewBag.AssetId">
+                        <option value="">-- Select Target System --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label">Drill Date</label>
+                    <input name="TestDate" type="date" value="@todayStr" required class="form-input font-mono" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-[#f4f6f2]/70 border border-[#426246]/15">
+                <div>
+                    <label class="form-label">Actual Recovery Time (Minutes)</label>
+                    <div class="relative">
+                        <input name="ActualRtoMinutes" id="modalTestRtoInput" type="number" min="0" required class="form-input pr-12 font-mono" placeholder="45" />
+                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">min</span>
+                    </div>
+                    <p id="modalTestRtoHint" class="text-[11px] text-slate-500 mt-1">Select an asset to view target RTO.</p>
+                </div>
+
+                <div>
+                    <label class="form-label">Actual Data Loss (Minutes)</label>
+                    <div class="relative">
+                        <input name="ActualRpoMinutes" id="modalTestRpoInput" type="number" min="0" required class="form-input pr-12 font-mono" placeholder="10" />
+                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">min</span>
+                    </div>
+                    <p id="modalTestRpoHint" class="text-[11px] text-slate-500 mt-1">Select an asset to view target RPO.</p>
+                </div>
+            </div>
+
+            <div id="modalTestEvalBanner" class="hidden rounded-xl p-3.5 border text-xs">
+                <p id="modalTestEvalTitle" class="font-semibold"></p>
+                <p id="modalTestEvalDesc" class="mt-0.5 leading-relaxed"></p>
+            </div>
+
+            <div>
+                <label class="form-label">Drill Evaluation Result</label>
+                <select name="Result" id="modalTestResultSelect" class="form-select">
+                    <option value="Passed">Passed (Met Recovery Thresholds)</option>
+                    <option value="Failed">Failed (Drill Breached Targets or Incomplete)</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="form-label">Drill Execution Notes</label>
+                <textarea name="Notes" rows="2" class="form-textarea text-xs" placeholder="Describe the simulation scenario (e.g. SAN controller shutdown, ransomware simulation)."></textarea>
+            </div>
+
+            <div>
+                <label class="form-label flex items-center gap-1.5 text-amber-800">
+                    <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-500"></i>
+                    <span>Lessons Learned &amp; Root Cause <span id="modalTestLessonsReq" class="hidden text-rose-600">(Required on Failure)</span></span>
+                </label>
+                <textarea name="LessonsLearned" id="modalTestLessonsInput" rows="2" class="form-textarea text-xs border-amber-300/80 focus:border-amber-500" placeholder="Document bottlenecks, root causes for breaches, or process improvements."></textarea>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                <label class="inline-flex items-start gap-2.5 cursor-pointer text-xs text-slate-700">
+                    <input type="checkbox" name="autoCreateTask" value="true" checked class="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[#426246]" />
+                    <span>
+                        <strong class="block text-slate-900">Auto-create remediation Recovery Task if drill fails</strong>
+                        <span class="text-slate-500">Assigns a follow-up task to the asset owner (7-day due date) until re-tested.</span>
+                    </span>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
+                <button type="button" data-modal-close class="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer">
+                    Cancel
+                </button>
+                <partial name="Components/_Button" model='new ButtonModel { Text = "Save Test Result", Icon = "check", Variant = "primary", IsSubmit = true }' />
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const targets = @Html.Raw(targetsJson);
+        const assetSelect = document.getElementById("modalTestAssetSelect");
+        const rtoInput = document.getElementById("modalTestRtoInput");
+        const rpoInput = document.getElementById("modalTestRpoInput");
+        const resultSelect = document.getElementById("modalTestResultSelect");
+        const rtoHint = document.getElementById("modalTestRtoHint");
+        const rpoHint = document.getElementById("modalTestRpoHint");
+        const evalBanner = document.getElementById("modalTestEvalBanner");
+        const evalTitle = document.getElementById("modalTestEvalTitle");
+        const evalDesc = document.getElementById("modalTestEvalDesc");
+        const lessonsReq = document.getElementById("modalTestLessonsReq");
+        const lessonsInput = document.getElementById("modalTestLessonsInput");
+
+        if (!assetSelect) return;
+
+        function updateModalTestEval() {
+            const asset = targets[assetSelect.value];
+            if (!asset) {
+                rtoHint.textContent = "Select an asset to view target RTO.";
+                rpoHint.textContent = "Select an asset to view target RPO.";
+                evalBanner.classList.add("hidden");
+                lessonsInput.required = false;
+                return;
+            }
+
+            rtoHint.textContent = `Target allowance: ${asset.rto} min`;
+            rpoHint.textContent = `Target maximum: ${asset.rpo} min`;
+
+            const actualRto = parseInt(rtoInput.value || "0", 10);
+            const actualRpo = parseInt(rpoInput.value || "0", 10);
+            const rtoOk = actualRto <= asset.rto;
+            const rpoOk = actualRpo <= asset.rpo;
+
+            evalBanner.classList.remove("hidden", "bg-[#f4f6f2]", "border-[#426246]/25", "text-[#293e2c]", "bg-rose-50", "border-rose-200", "text-rose-800");
+
+            if (!rtoOk || !rpoOk) {
+                resultSelect.value = "Failed";
+                lessonsReq.classList.remove("hidden");
+                lessonsInput.required = true;
+                evalBanner.classList.add("bg-rose-50", "border-rose-200", "text-rose-800");
+                const diffs = [];
+                if (!rtoOk) diffs.push(`+${actualRto - asset.rto}m over RTO`);
+                if (!rpoOk) diffs.push(`+${actualRpo - asset.rpo}m over RPO`);
+                evalTitle.textContent = `Target Breached (${diffs.join(", ")}) — Result set to Failed`;
+                evalDesc.textContent = "Root-cause Lessons Learned is required. Saving will flag this asset At Risk until re-tested.";
+            } else {
+                const isFailed = resultSelect.value === "Failed";
+                lessonsReq.classList.toggle("hidden", !isFailed);
+                lessonsInput.required = isFailed;
+                if (isFailed) {
+                    evalBanner.classList.add("bg-rose-50", "border-rose-200", "text-rose-800");
+                    evalTitle.textContent = "Manual Failure Selected";
+                    evalDesc.textContent = "Document the operational root cause in Lessons Learned.";
+                } else {
+                    evalBanner.classList.add("bg-[#f4f6f2]", "border-[#426246]/25", "text-[#293e2c]");
+                    evalTitle.textContent = "RTO & RPO Targets Met — Compliant (Passed)";
+                    evalDesc.textContent = `Within ${asset.rto}m RTO and ${asset.rpo}m RPO thresholds for ${asset.name}.`;
+                }
+            }
+        }
+
+        assetSelect.addEventListener("change", updateModalTestEval);
+        rtoInput.addEventListener("input", updateModalTestEval);
+        rpoInput.addEventListener("input", updateModalTestEval);
+        resultSelect.addEventListener("change", updateModalTestEval);
+    })();
+</script>

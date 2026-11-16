@@ -53,6 +53,12 @@ namespace Green_Basket.Controllers
                 return NotFound();
             }
 
+            var allAssets = await _context.Assets.OrderBy(a => a.Name).ToListAsync();
+            ViewData["AssetId"] = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(allAssets, "Id", "Name", asset.Id);
+            ViewBag.AssetTargetsJson = System.Text.Json.JsonSerializer.Serialize(
+                allAssets.ToDictionary(a => a.Id.ToString(), a => new { name = a.Name, rto = a.RtoMinutes, rpo = a.RpoMinutes, owner = a.Owner })
+            );
+
             return View(asset);
         }
 
@@ -151,6 +157,12 @@ namespace Green_Basket.Controllers
             {
                 return NotFound();
             }
+
+            var allAssets = await _context.Assets.OrderBy(a => a.Name).ToListAsync();
+            ViewData["AssetId"] = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(allAssets, "Id", "Name", asset.Id);
+            ViewBag.AssetTargetsJson = System.Text.Json.JsonSerializer.Serialize(
+                allAssets.ToDictionary(a => a.Id.ToString(), a => new { name = a.Name, rto = a.RtoMinutes, rpo = a.RpoMinutes, owner = a.Owner })
+            );
 
             return View(asset);
         }

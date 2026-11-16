@@ -1,39 +1,89 @@
 @model Green_Basket.Models.ViewModels.ButtonModel
 
 @{
-    var baseClass = "inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
+    var sizeClass = Model.Size?.ToLower() switch
+    {
+        "sm" => "px-3 py-1.5 text-xs gap-1.5",
+        "icon" => "p-2 text-xs",
+        _ => "px-4 py-2.5 text-sm gap-2"
+    };
+
+    var widthClass = Model.FullWidth ? "w-full" : "";
+
+    var baseClass = $"inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none cursor-pointer {sizeClass} {widthClass}";
+
     var variantClass = Model.Variant?.ToLower() switch
     {
-        "primary" => "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500 shadow-sm shadow-emerald-600/20",
-        "secondary" => "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200 focus:ring-slate-400",
-        "danger" => "bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500 shadow-sm shadow-rose-600/20",
-        "outline" => "border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 focus:ring-emerald-500",
-        "ghost" => "text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:ring-slate-400",
-        _ => "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500"
+        "primary" => "bg-[#426246] text-white hover:bg-[#355038] active:bg-[#293e2c] focus:ring-[#426246]/40 shadow-xs",
+        "secondary" => "bg-slate-100 text-slate-800 hover:bg-slate-200/80 border border-slate-200 focus:ring-slate-400/40",
+        "outline" => "border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-400 focus:ring-[#426246]/30",
+        "subtle" => "bg-[#f4f6f2] text-[#426246] hover:bg-[#e6ede6] border border-[#426246]/20 focus:ring-[#426246]/30",
+        "danger" => "bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500/40 shadow-xs",
+        "danger-subtle" => "bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 focus:ring-rose-500/30",
+        "primary-ghost" => "text-[#426246] hover:text-[#355038] hover:bg-[#f4f6f2] focus:ring-[#426246]/25",
+        "ghost" => "text-slate-500 hover:text-slate-900 hover:bg-slate-100 focus:ring-slate-400/30",
+        _ => "bg-[#426246] text-white hover:bg-[#355038] focus:ring-[#426246]/40"
     };
 
     var finalClass = $"{baseClass} {variantClass} {Model.CustomClass}".Trim();
 }
 
-@if (string.IsNullOrEmpty(Model.Href))
+@if (!string.IsNullOrEmpty(Model.ModalTarget))
 {
-    <button type="@(Model.IsSubmit ? "submit" : "button")" 
-            onclick="@Model.OnClick"
+    <button type="button"
+            data-modal-open="@Model.ModalTarget"
+            data-modal-asset="@Model.ModalAssetId"
+            data-modal-title="@Model.ModalTitlePrefill"
+            title="@Model.Title"
             class="@finalClass">
         @if (!string.IsNullOrEmpty(Model.Icon))
         {
-            <i data-lucide="@Model.Icon" class="w-4 h-4"></i>
+            <i data-lucide="@Model.Icon" class="w-4 h-4 shrink-0"></i>
         }
-        <span>@Model.Text</span>
+        @if (!string.IsNullOrEmpty(Model.Text))
+        {
+            <span>@Model.Text</span>
+        }
+        @if (!string.IsNullOrEmpty(Model.IconRight))
+        {
+            <i data-lucide="@Model.IconRight" class="w-4 h-4 shrink-0"></i>
+        }
+    </button>
+}
+else if (string.IsNullOrEmpty(Model.Href))
+{
+    <button type="@(Model.IsSubmit ? "submit" : "button")"
+            onclick="@Model.OnClick"
+            title="@Model.Title"
+            class="@finalClass">
+        @if (!string.IsNullOrEmpty(Model.Icon))
+        {
+            <i data-lucide="@Model.Icon" class="w-4 h-4 shrink-0"></i>
+        }
+        @if (!string.IsNullOrEmpty(Model.Text))
+        {
+            <span>@Model.Text</span>
+        }
+        @if (!string.IsNullOrEmpty(Model.IconRight))
+        {
+            <i data-lucide="@Model.IconRight" class="w-4 h-4 shrink-0"></i>
+        }
     </button>
 }
 else
 {
-    <a href="@Model.Href" class="@finalClass">
+    <a href="@Model.Href" title="@Model.Title" class="@finalClass">
         @if (!string.IsNullOrEmpty(Model.Icon))
         {
-            <i data-lucide="@Model.Icon" class="w-4 h-4"></i>
+            <i data-lucide="@Model.Icon" class="w-4 h-4 shrink-0"></i>
         }
-        <span>@Model.Text</span>
+        @if (!string.IsNullOrEmpty(Model.Text))
+        {
+            <span>@Model.Text</span>
+        }
+        @if (!string.IsNullOrEmpty(Model.IconRight))
+        {
+            <i data-lucide="@Model.IconRight" class="w-4 h-4 shrink-0"></i>
+        }
     </a>
 }

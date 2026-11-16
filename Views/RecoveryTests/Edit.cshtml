@@ -1,69 +1,74 @@
 @model Green_Basket.Models.RecoveryTest
+@using Green_Basket.Models.ViewModels
 
 @{
     ViewData["Title"] = "Edit Test Result";
     Layout = "_Layout";
+    var targetsJson = ViewBag.AssetTargetsJson as string ?? "{}";
 }
 
 <div class="max-w-2xl mx-auto">
-    <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Edit Test Result</h1>
-            <p class="text-sm text-slate-500 mt-1">Update drill metrics, notes, or lessons learned.</p>
-        </div>
-        <a asp-action="Index" class="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            <span>Back to list</span>
-        </a>
-    </div>
+    <partial name="Components/_PageHeader" model='new PageHeaderModel {
+        Eyebrow = "Recovery Tests",
+        Title = "Edit Test Result",
+        Subtitle = "Update drill metrics, notes, or lessons learned. Breached RTO/RPO targets enforce Failed status.",
+        BackUrl = Url.Action("Details", "RecoveryTests", new { id = Model.Id })
+    }' />
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
-        <form asp-action="Edit" method="post" class="space-y-6">
+    <div class="gb-card p-6 sm:p-8">
+        <form asp-action="Edit" method="post" class="space-y-5">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="Id" />
-            <div asp-validation-summary="ModelOnly" class="p-3 rounded-lg bg-rose-50 text-rose-700 text-xs"></div>
+            <div asp-validation-summary="ModelOnly" class="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs"></div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label asp-for="AssetId" class="form-label">Target System / Asset</label>
-                    <select asp-for="AssetId" class="form-select" asp-items="ViewBag.AssetId"></select>
+                    <select asp-for="AssetId" id="assetSelect" class="form-select" asp-items="ViewBag.AssetId"></select>
                     <span asp-validation-for="AssetId" class="text-danger"></span>
                 </div>
 
                 <div>
                     <label asp-for="TestDate" class="form-label">Drill Date</label>
-                    <input asp-for="TestDate" type="date" class="form-input" />
+                    <input asp-for="TestDate" type="date" class="form-input font-mono" />
                     <span asp-validation-for="TestDate" class="text-danger"></span>
                 </div>
             </div>
 
-            <div>
-                <label asp-for="Result" class="form-label">Drill Evaluation Result</label>
-                <select asp-for="Result" class="form-select">
-                    <option value="Passed">Passed (Met Recovery Thresholds)</option>
-                    <option value="Failed">Failed (Drill Breached Targets or Incomplete)</option>
-                </select>
-                <span asp-validation-for="Result" class="text-danger"></span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-[#f4f6f2]/70 border border-[#426246]/15">
                 <div>
                     <label asp-for="ActualRtoMinutes" class="form-label">Actual Recovery Time (Minutes)</label>
                     <div class="relative">
-                        <input asp-for="ActualRtoMinutes" type="number" class="form-input pr-16" />
-                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">minutes</span>
+                        <input asp-for="ActualRtoMinutes" id="actualRtoInput" type="number" class="form-input pr-16 font-mono" />
+                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">min</span>
                     </div>
+                    <p id="targetRtoHint" class="text-[11px] text-slate-500 mt-1"></p>
                     <span asp-validation-for="ActualRtoMinutes" class="text-danger"></span>
                 </div>
 
                 <div>
                     <label asp-for="ActualRpoMinutes" class="form-label">Actual Data Loss (Minutes)</label>
                     <div class="relative">
-                        <input asp-for="ActualRpoMinutes" type="number" class="form-input pr-16" />
-                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">minutes</span>
+                        <input asp-for="ActualRpoMinutes" id="actualRpoInput" type="number" class="form-input pr-16 font-mono" />
+                        <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">min</span>
                     </div>
+                    <p id="targetRpoHint" class="text-[11px] text-slate-500 mt-1"></p>
                     <span asp-validation-for="ActualRpoMinutes" class="text-danger"></span>
                 </div>
+            </div>
+
+            <div id="evalBanner" class="hidden rounded-xl p-4 border text-xs">
+                <p id="evalTitle" class="font-semibold"></p>
+                <p id="evalDesc" class="mt-0.5 leading-relaxed"></p>
+            </div>
+
+            <div>
+                <label asp-for="Result" class="form-label">Drill Evaluation Result</label>
+                <select asp-for="Result" id="resultSelect" class="form-select">
+                    <option value="Passed">Passed (Met Recovery Thresholds)</option>
+                    <option value="Failed">Failed (Drill Breached Targets or Incomplete)</option>
+                </select>
+                <span asp-validation-for="Result" class="text-danger"></span>
             </div>
 
             <div>
@@ -73,23 +78,80 @@
             </div>
 
             <div>
-                <label asp-for="LessonsLearned" class="form-label text-amber-900 font-semibold flex items-center gap-1.5">
-                    <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i>
-                    <span>Lessons Learned &amp; Process Improvements</span>
+                <label asp-for="LessonsLearned" class="form-label flex items-center gap-1.5 text-amber-800">
+                    <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-500"></i>
+                    <span>Lessons Learned &amp; Root Cause <span id="lessonsRequiredTag" class="hidden text-rose-600">(Required on Failure)</span></span>
                 </label>
-                <textarea asp-for="LessonsLearned" rows="3" class="form-textarea text-xs border-amber-300 focus:border-amber-500"></textarea>
+                <textarea asp-for="LessonsLearned" rows="3" class="form-textarea text-xs border-amber-300/80 focus:border-amber-500"></textarea>
                 <span asp-validation-for="LessonsLearned" class="text-danger"></span>
             </div>
 
-            <div class="flex items-center justify-between pt-4 border-t border-slate-100">
-                <a asp-action="Details" asp-route-id="@Model.Id" class="text-sm text-slate-500 hover:text-slate-800">
-                    Cancel &amp; return
-                </a>
-                <button type="submit" class="px-5 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm flex items-center gap-2">
-                    <i data-lucide="check" class="w-4 h-4"></i>
-                    <span>Update Record</span>
-                </button>
+            <div class="flex items-center justify-end gap-2.5 pt-5 border-t border-slate-100">
+                <partial name="Components/_Button" model='new ButtonModel { Text = "Cancel", Href = Url.Action("Details", new { id = Model.Id }), Variant = "outline" }' />
+                <partial name="Components/_Button" model='new ButtonModel { Text = "Update Record", Icon = "check", Variant = "primary", IsSubmit = true }' />
             </div>
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const targets = @Html.Raw(targetsJson);
+            const assetSelect = document.getElementById("assetSelect");
+            const rtoInput = document.getElementById("actualRtoInput");
+            const rpoInput = document.getElementById("actualRpoInput");
+            const resultSelect = document.getElementById("resultSelect");
+            const rtoHint = document.getElementById("targetRtoHint");
+            const rpoHint = document.getElementById("targetRpoHint");
+            const evalBanner = document.getElementById("evalBanner");
+            const evalTitle = document.getElementById("evalTitle");
+            const evalDesc = document.getElementById("evalDesc");
+            const lessonsReq = document.getElementById("lessonsRequiredTag");
+
+            function updateEvaluation() {
+                const asset = targets[assetSelect.value];
+                if (!asset) return;
+
+                rtoHint.textContent = `Target allowance: ${asset.rto} min`;
+                rpoHint.textContent = `Target maximum: ${asset.rpo} min`;
+
+                const actualRto = parseInt(rtoInput.value || "0", 10);
+                const actualRpo = parseInt(rpoInput.value || "0", 10);
+                const rtoOk = actualRto <= asset.rto;
+                const rpoOk = actualRpo <= asset.rpo;
+
+                evalBanner.classList.remove("hidden", "bg-[#f4f6f2]", "border-[#426246]/25", "text-[#293e2c]", "bg-rose-50", "border-rose-200", "text-rose-800");
+
+                if (!rtoOk || !rpoOk) {
+                    resultSelect.value = "Failed";
+                    lessonsReq.classList.remove("hidden");
+                    evalBanner.classList.add("bg-rose-50", "border-rose-200", "text-rose-800");
+                    const diffs = [];
+                    if (!rtoOk) diffs.push(`+${actualRto - asset.rto}m over RTO`);
+                    if (!rpoOk) diffs.push(`+${actualRpo - asset.rpo}m over RPO`);
+                    evalTitle.textContent = `Target Breached (${diffs.join(", ")}) — Result set to Failed`;
+                    evalDesc.textContent = "Root-cause Lessons Learned is required on failed drills.";
+                } else {
+                    const isFailed = resultSelect.value === "Failed";
+                    lessonsReq.classList.toggle("hidden", !isFailed);
+                    if (isFailed) {
+                        evalBanner.classList.add("bg-rose-50", "border-rose-200", "text-rose-800");
+                        evalTitle.textContent = "Manual Failure Selected";
+                        evalDesc.textContent = "Document the operational root cause in Lessons Learned.";
+                    } else {
+                        evalBanner.classList.add("bg-[#f4f6f2]", "border-[#426246]/25", "text-[#293e2c]");
+                        evalTitle.textContent = "RTO & RPO Targets Met — Compliant (Passed)";
+                        evalDesc.textContent = `Within ${asset.rto}m RTO and ${asset.rpo}m RPO thresholds.`;
+                    }
+                }
+            }
+
+            assetSelect.addEventListener("change", updateEvaluation);
+            rtoInput.addEventListener("input", updateEvaluation);
+            rpoInput.addEventListener("input", updateEvaluation);
+            resultSelect.addEventListener("change", updateEvaluation);
+            updateEvaluation();
+        })();
+    </script>
+}

@@ -1,32 +1,64 @@
 @model Green_Basket.Models.ViewModels.PageHeaderModel
+@using Green_Basket.Models.ViewModels
 
-<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-6">
-    <div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">@Model.Title</h1>
-        @if (!string.IsNullOrEmpty(Model.Subtitle))
-        {
-            <p class="mt-1.5 text-sm text-slate-500 font-normal">@Model.Subtitle</p>
-        }
-    </div>
-
-    @if (!string.IsNullOrEmpty(Model.ActionText) && !string.IsNullOrEmpty(Model.ActionUrl))
+@{
+    bool HasRole(string? roleSpec)
     {
-        bool canShowAction = true;
-        if (!string.IsNullOrEmpty(Model.RequiredRole))
-        {
-            var allowedRoles = Model.RequiredRole.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            canShowAction = allowedRoles.Any(r => User.IsInRole(r));
-        }
+        if (string.IsNullOrWhiteSpace(roleSpec)) return true;
+        var allowed = roleSpec.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return allowed.Any(r => User.IsInRole(r));
+    }
+}
 
-        if (canShowAction)
+<div class="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-5">
+    <div class="flex items-start sm:items-center gap-3.5 min-w-0">
+        @if (!string.IsNullOrEmpty(Model.BackUrl))
         {
-            <a href="@Model.ActionUrl" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow transition-all shrink-0 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                @if (!string.IsNullOrEmpty(Model.ActionIcon))
-                {
-                    <i data-lucide="@Model.ActionIcon" class="w-4 h-4"></i>
-                }
-                <span>@Model.ActionText</span>
+            <a href="@Model.BackUrl"
+               title="Go back"
+               class="mt-0.5 sm:mt-0 p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg border border-transparent hover:border-slate-200 transition-all shrink-0">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
             </a>
         }
-    }
+        <div class="min-w-0">
+            @if (!string.IsNullOrEmpty(Model.Eyebrow))
+            {
+                <p class="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#426246] mb-1">@Model.Eyebrow</p>
+            }
+            <div class="flex flex-wrap items-center gap-2.5">
+                <h1 class="text-2xl sm:text-[1.7rem] font-bold tracking-tight text-slate-900 leading-tight">@Model.Title</h1>
+                @if (!string.IsNullOrEmpty(Model.BadgeValue))
+                {
+                    <partial name="Components/_Badge" model='new BadgeModel { Value = Model.BadgeValue, Type = Model.BadgeType ?? "priority" }' />
+                }
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Subtitle))
+            {
+                <p class="mt-1 text-sm text-slate-500">@Model.Subtitle</p>
+            }
+        </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 shrink-0">
+        @if (!string.IsNullOrEmpty(Model.EditUrl) && HasRole(Model.EditRequiredRole))
+        {
+            <partial name="Components/_Button" model='new ButtonModel { Text = "Edit", Href = Model.EditUrl, Variant = "outline", Size = "sm", Icon = "pencil" }' />
+        }
+        @if (!string.IsNullOrEmpty(Model.DeleteUrl) && HasRole(Model.DeleteRequiredRole))
+        {
+            <partial name="Components/_Button" model='new ButtonModel { Text = "Delete", Href = Model.DeleteUrl, Variant = "danger-subtle", Size = "sm", Icon = "trash-2" }' />
+        }
+        @if (!string.IsNullOrEmpty(Model.ActionText) && (!string.IsNullOrEmpty(Model.ActionUrl) || !string.IsNullOrEmpty(Model.ActionModalTarget)) && HasRole(Model.RequiredRole))
+        {
+            <partial name="Components/_Button" model='new ButtonModel {
+                Text = Model.ActionText,
+                Href = Model.ActionUrl,
+                ModalTarget = Model.ActionModalTarget,
+                ModalAssetId = Model.ActionModalAssetId,
+                Variant = "primary",
+                Size = "md",
+                Icon = Model.ActionIcon
+            }' />
+        }
+    </div>
 </div>

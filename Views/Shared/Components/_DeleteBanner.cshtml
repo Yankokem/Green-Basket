@@ -1,0 +1,12 @@
+@model string[]
+@* Model[0] = Title, Model[1] = Description *@
+
+<div class="bg-rose-50/80 p-6 border-b border-rose-100 flex items-start gap-4">
+    <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+    </div>
+    <div>
+        <h2 class="text-lg font-bold text-rose-900">@Model[0]</h2>
+        <p class="text-xs text-rose-700 mt-1 leading-relaxed">@Model[1]</p>
+    </div>
+</div>

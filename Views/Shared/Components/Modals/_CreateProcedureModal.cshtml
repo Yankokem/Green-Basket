@@ -1,0 +1,37 @@
+@using Green_Basket.Models.ViewModels
+
+<div id="createProcedureModal" data-modal-root class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6">
+    <div data-modal-backdrop class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] opacity-0 transition-opacity duration-200 ease-out"></div>
+    <div data-modal-panel class="relative z-10 w-full max-w-2xl max-h-[90vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden opacity-0 scale-95 translate-y-3 transition-all duration-200 ease-out">
+        <partial name="Components/Modals/_ModalHeader" model='new[] { "Recovery Procedures", "Add Recovery Procedure", "Specify technical restoration actions linked to a hospital asset." }' />
+
+        <form asp-controller="RecoveryProcedures" asp-action="Create" method="post" class="p-6 space-y-4 overflow-y-auto">
+            @Html.AntiForgeryToken()
+
+            <div>
+                <label class="form-label">Linked Hospital Asset</label>
+                <select name="AssetId" required class="form-select" asp-items="ViewBag.AssetId">
+                    <option value="">-- Select Target Asset --</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="form-label">Procedure Title</label>
+                <input name="Title" required maxlength="150" class="form-input" placeholder="e.g. Failover to Warm Standby Server" />
+            </div>
+
+            <div>
+                <label class="form-label">Step-by-Step Instructions</label>
+                <textarea name="Steps" rows="7" required class="form-textarea font-mono text-xs" placeholder="1. Sever infected network segment.&#10;2. Verify secondary vault integrity.&#10;3. Trigger VM clone sequence.&#10;4. Re-route DNS records."></textarea>
+                <p class="text-[11px] text-slate-400 mt-1">Enter numbered instructions, command-lines, or verification steps.</p>
+            </div>
+
+            <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
+                <button type="button" data-modal-close class="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 transition-colors cursor-pointer">
+                    Cancel
+                </button>
+                <partial name="Components/_Button" model='new ButtonModel { Text = "Save Procedure", Icon = "check", Variant = "primary", IsSubmit = true }' />
+            </div>
+        </form>
+    </div>
+</div>

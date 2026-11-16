@@ -1,0 +1,19 @@
+@model string[]
+@* Model[0] = Eyebrow, Model[1] = Title, Model[2] = Subtitle *@
+
+<div class="px-6 py-4 border-b border-slate-100 bg-slate-50/70 flex items-start justify-between gap-4 shrink-0">
+    <div>
+        <p class="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#426246]">@Model[0]</p>
+        <h3 class="text-lg font-bold text-slate-900 tracking-tight mt-0.5">@Model[1]</h3>
+        @if (Model.Length > 2 && !string.IsNullOrEmpty(Model[2]))
+        {
+            <p class="text-xs text-slate-500 mt-0.5">@Model[2]</p>
+        }
+    </div>
+    <button type="button"
+            data-modal-close
+            aria-label="Close modal"
+            class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer">
+        <i data-lucide="x" class="w-4 h-4"></i>
+    </button>
+</div>

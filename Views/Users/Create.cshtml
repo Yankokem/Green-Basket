@@ -1,4 +1,5 @@
 @model Green_Basket.Models.ViewModels.CreateUserViewModel
+@using Green_Basket.Models.ViewModels
 
 @{
     ViewData["Title"] = "Create New User";
@@ -6,21 +7,17 @@
 }
 
 <div class="max-w-xl mx-auto">
-    <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Add User Account</h1>
-            <p class="text-sm text-slate-500 mt-1">Provision a new hospital disaster recovery account.</p>
-        </div>
-        <a asp-action="Index" class="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            <span>Back to list</span>
-        </a>
-    </div>
+    <partial name="Components/_PageHeader" model='new PageHeaderModel {
+        Eyebrow = "User Management",
+        Title = "Add User Account",
+        Subtitle = "Provision a new hospital disaster recovery account.",
+        BackUrl = Url.Action("Index", "Users")
+    }' />
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
-        <form asp-action="Create" method="post" class="space-y-6">
+    <div class="gb-card p-6 sm:p-8">
+        <form asp-action="Create" method="post" class="space-y-5">
             @Html.AntiForgeryToken()
-            <div asp-validation-summary="ModelOnly" class="p-3 rounded-lg bg-rose-50 text-rose-700 text-xs"></div>
+            <div asp-validation-summary="ModelOnly" class="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs"></div>
 
             <div>
                 <label asp-for="FullName" class="form-label">Full Name</label>
@@ -51,14 +48,9 @@
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
 
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50">
-                    Cancel
-                </a>
-                <button type="submit" class="px-5 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm flex items-center gap-2">
-                    <i data-lucide="user-check" class="w-4 h-4"></i>
-                    <span>Create Account</span>
-                </button>
+            <div class="flex items-center justify-end gap-2.5 pt-5 border-t border-slate-100">
+                <partial name="Components/_Button" model='new ButtonModel { Text = "Cancel", Href = Url.Action("Index"), Variant = "outline" }' />
+                <partial name="Components/_Button" model='new ButtonModel { Text = "Create Account", Icon = "user-check", Variant = "primary", IsSubmit = true }' />
             </div>
         </form>
     </div>

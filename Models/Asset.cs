@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Green_Basket.Models
 {
@@ -46,5 +47,36 @@ namespace Green_Basket.Models
         public virtual ICollection<Contact> Contacts { get; set; } = new List<Contact>();
         public virtual ICollection<RecoveryTest> RecoveryTests { get; set; } = new List<RecoveryTest>();
         public virtual ICollection<RecoveryTask> RecoveryTasks { get; set; } = new List<RecoveryTask>();
+
+        [NotMapped]
+        public RecoveryTest? LatestTest => RecoveryTests
+            .OrderByDescending(t => t.TestDate)
+            .ThenByDescending(t => t.Id)
+            .FirstOrDefault();
+
+        [NotMapped]
+        public int OpenTaskCount => RecoveryTasks.Count(t => !string.Equals(t.Status, "Done", StringComparison.OrdinalIgnoreCase));
+
+        /// <summary>
+        /// Derives overall disaster recovery readiness from the latest drill result and RTO/RPO targets.
+        /// </summary>
+        [NotMapped]
+        public string ReadinessStatus
+        {
+            get
+            {
+                var latest = LatestTest;
+                if (latest == null)
+                {
+                    return "Untested";
+                }
+
+                bool compliant = string.Equals(latest.Result, "Passed", StringComparison.OrdinalIgnoreCase)
+                                 && latest.ActualRtoMinutes <= RtoMinutes
+                                 && latest.ActualRpoMinutes <= RpoMinutes;
+
+                return compliant ? "DR Ready" : "At Risk";
+            }
+        }
     }
 }

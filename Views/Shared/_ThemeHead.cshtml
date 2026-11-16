@@ -1,0 +1,124 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>@ViewData["Title"] — Green Basket DR Planner</title>
+<link rel="icon" type="image/svg+xml" href="~/images/greenbasket-logo-2x2.svg" />
+
+<!-- Google Fonts: Inter & JetBrains Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    mono: ['JetBrains Mono', 'monospace'],
+                },
+                colors: {
+                    sage: {
+                        50: '#f4f6f2',
+                        100: '#e6ede6',
+                        200: '#ceddce',
+                        300: '#acc4ac',
+                        500: '#557959',
+                        600: '#426246',
+                        700: '#355038',
+                        800: '#293e2c',
+                        900: '#1f3022',
+                    }
+                }
+            }
+        }
+    }
+</script>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+<style>
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Unified Form Controls */
+    .form-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #475569;
+        margin-bottom: 0.45rem;
+    }
+
+    .form-input, .form-select, .form-textarea {
+        width: 100%;
+        border-radius: 0.5rem;
+        border: 1px solid #cbd5e1;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.875rem;
+        background-color: #ffffff;
+        color: #0f172a;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-input::placeholder, .form-textarea::placeholder {
+        color: #94a3b8;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+        outline: none;
+        border-color: #426246;
+        box-shadow: 0 0 0 4px rgba(66, 98, 70, 0.12);
+    }
+
+    .form-input:disabled, .form-select:disabled {
+        background-color: #f8fafc;
+        color: #64748b;
+        cursor: not-allowed;
+    }
+
+    .text-danger {
+        color: #e11d48;
+        font-size: 0.75rem;
+        margin-top: 0.35rem;
+        display: block;
+    }
+
+    /* Unified Card & Table Surfaces */
+    .gb-card {
+        background-color: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    }
+
+    .bg-grid-subtle {
+        background-image:
+            linear-gradient(to right, rgba(66, 98, 70, 0.05) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(66, 98, 70, 0.05) 1px, transparent 1px);
+        background-size: 36px 36px;
+    }
+
+    /* Clean scrollbar for wide tables */
+    .overflow-x-auto::-webkit-scrollbar {
+        height: 7px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+</style>

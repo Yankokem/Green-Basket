@@ -1,4 +1,5 @@
 @model Green_Basket.Models.RecoveryTask
+@using Green_Basket.Models.ViewModels
 
 @{
     ViewData["Title"] = "Edit Recovery Task";
@@ -6,22 +7,18 @@
 }
 
 <div class="max-w-2xl mx-auto">
-    <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Edit Task</h1>
-            <p class="text-sm text-slate-500 mt-1">Update status, assignee, or target completion date.</p>
-        </div>
-        <a asp-action="Index" class="text-sm text-slate-500 hover:text-slate-800 flex items-center gap-1">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            <span>Back to list</span>
-        </a>
-    </div>
+    <partial name="Components/_PageHeader" model='new PageHeaderModel {
+        Eyebrow = "Recovery Tasks",
+        Title = "Edit Task",
+        Subtitle = "Update status, assignee, or target completion date.",
+        BackUrl = Url.Action("Details", "RecoveryTasks", new { id = Model.Id })
+    }' />
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
-        <form asp-action="Edit" method="post" class="space-y-6">
+    <div class="gb-card p-6 sm:p-8">
+        <form asp-action="Edit" method="post" class="space-y-5">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="Id" />
-            <div asp-validation-summary="ModelOnly" class="p-3 rounded-lg bg-rose-50 text-rose-700 text-xs"></div>
+            <div asp-validation-summary="ModelOnly" class="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs"></div>
 
             <div>
                 <label asp-for="AssetId" class="form-label">Linked Hospital Asset</label>
@@ -55,18 +52,13 @@
 
             <div>
                 <label asp-for="DueDate" class="form-label">Due Date</label>
-                <input asp-for="DueDate" type="date" class="form-input" />
+                <input asp-for="DueDate" type="date" class="form-input font-mono" />
                 <span asp-validation-for="DueDate" class="text-danger"></span>
             </div>
 
-            <div class="flex items-center justify-between pt-4 border-t border-slate-100">
-                <a asp-action="Details" asp-route-id="@Model.Id" class="text-sm text-slate-500 hover:text-slate-800">
-                    Cancel &amp; return
-                </a>
-                <button type="submit" class="px-5 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm flex items-center gap-2">
-                    <i data-lucide="check" class="w-4 h-4"></i>
-                    <span>Update Task</span>
-                </button>
+            <div class="flex items-center justify-end gap-2.5 pt-5 border-t border-slate-100">
+                <partial name="Components/_Button" model='new ButtonModel { Text = "Cancel", Href = Url.Action("Details", new { id = Model.Id }), Variant = "outline" }' />
+                <partial name="Components/_Button" model='new ButtonModel { Text = "Update Task", Icon = "check", Variant = "primary", IsSubmit = true }' />
             </div>
         </form>
     </div>

@@ -1,4 +1,5 @@
 @model Green_Basket.Models.Asset
+@using Green_Basket.Models.ViewModels
 
 @{
     ViewData["Title"] = "Delete Asset — " + Model.Name;
@@ -6,56 +7,41 @@
 }
 
 <div class="max-w-xl mx-auto">
-    <div class="bg-white rounded-2xl shadow-sm border border-rose-200 overflow-hidden">
-        <!-- Warning Banner -->
-        <div class="bg-rose-50 p-6 border-b border-rose-100 flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
-                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h2 class="text-lg font-bold text-rose-900">Confirm Asset Deletion</h2>
-                <p class="text-xs text-rose-700 mt-1 leading-relaxed">
-                    Are you sure you want to permanently delete this system? Deleting this asset will cascade and remove all linked recovery procedures, emergency contacts, drill test results, and tasks.
-                </p>
-            </div>
-        </div>
+    <div class="gb-card border-rose-200 overflow-hidden">
+        <partial name="Components/_DeleteBanner" model='new[] {
+            "Confirm Asset Deletion",
+            "Are you sure you want to permanently delete this system? Deleting this asset will cascade and remove all linked recovery procedures, emergency contacts, drill test results, and tasks."
+        }' />
 
-        <!-- Asset Summary Box -->
-        <div class="p-6 space-y-4">
-            <div class="rounded-lg bg-slate-50 p-4 border border-slate-200 text-sm space-y-2">
-                <div class="flex justify-between">
-                    <span class="text-slate-500 font-medium">Asset Name:</span>
-                    <span class="text-slate-900 font-bold">@Model.Name</span>
+        <div class="p-6 space-y-5">
+            <div class="rounded-xl bg-slate-50 p-4 border border-slate-200/80 text-sm space-y-2.5">
+                <div class="flex justify-between gap-4">
+                    <span class="text-slate-500 font-medium">Asset Name</span>
+                    <span class="text-slate-900 font-semibold text-right">@Model.Name</span>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-500 font-medium">Priority:</span>
-                    <span class="text-slate-900 font-semibold">@Model.Priority</span>
+                <div class="flex justify-between items-center gap-4">
+                    <span class="text-slate-500 font-medium">Priority</span>
+                    <partial name="Components/_Badge" model='new BadgeModel { Value = Model.Priority, Type = "priority" }' />
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-500 font-medium">System Lead:</span>
+                <div class="flex justify-between gap-4">
+                    <span class="text-slate-500 font-medium">System Lead</span>
                     <span class="text-slate-700">@Model.Owner</span>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-500 font-medium">Targets:</span>
-                    <span class="font-mono text-slate-700 text-xs">RTO: @Model.RtoMinutes min | RPO: @Model.RpoMinutes min</span>
+                <div class="flex justify-between gap-4">
+                    <span class="text-slate-500 font-medium">Targets</span>
+                    <span class="font-mono text-slate-700 text-xs">RTO: @Model.RtoMinutes min · RPO: @Model.RpoMinutes min</span>
                 </div>
-                <div class="flex justify-between pt-2 border-t border-slate-200 text-xs text-slate-500">
-                    <span>Associated Records:</span>
-                    <span>@Model.RecoveryProcedures.Count Procedures, @Model.Contacts.Count Contacts, @Model.RecoveryTests.Count Tests, @Model.RecoveryTasks.Count Tasks</span>
+                <div class="flex justify-between gap-4 pt-2.5 border-t border-slate-200 text-xs text-slate-500">
+                    <span>Associated Records</span>
+                    <span class="font-mono">@Model.RecoveryProcedures.Count Procedures · @Model.Contacts.Count Contacts · @Model.RecoveryTests.Count Tests · @Model.RecoveryTasks.Count Tasks</span>
                 </div>
             </div>
 
-            <!-- Form -->
-            <form asp-action="Delete" method="post" class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <form asp-action="Delete" method="post" class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Id" />
-                <a asp-action="Index" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
-                    Cancel
-                </a>
-                <button type="submit" class="px-5 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm shadow-rose-600/30 transition-all flex items-center gap-2">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    <span>Yes, Permanently Delete</span>
-                </button>
+                <partial name="Components/_Button" model='new ButtonModel { Text = "Cancel", Href = Url.Action("Index"), Variant = "outline" }' />
+                <partial name="Components/_Button" model='new ButtonModel { Text = "Permanently Delete", Icon = "trash-2", Variant = "danger", IsSubmit = true }' />
             </form>
         </div>
     </div>

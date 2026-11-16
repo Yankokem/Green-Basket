@@ -6,52 +6,46 @@
     Layout = "_Layout";
 }
 
-<partial name="Components/_PageHeader" model='new PageHeaderModel { 
-    Title = "User & Role Access Management", 
+<partial name="Components/_PageHeader" model='new PageHeaderModel {
+    Title = "User & Role Access Management",
     Subtitle = "Configure staff accounts, disaster recovery coordinators, and administrative access.",
     ActionText = "New User",
-    ActionUrl = Url.Action("Create", "Users"),
+    ActionModalTarget = "createUserModal",
     ActionIcon = "user-plus",
     RequiredRole = "Admin"
 }' />
 
-<div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
-    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
-        <div class="flex items-center gap-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-600">
-                Authorized Personnel Accounts
-            </span>
-            <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-slate-200/70 text-slate-700">
-                @Model.Count()
-            </span>
-        </div>
-        <span class="text-xs text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg font-bold border border-purple-200/60">
-            Admin Controlled Access
-        </span>
-    </div>
+<div id="users-table" class="gb-card overflow-hidden">
+    <partial name="Components/_TableToolbar" model='new TableToolbarModel {
+        TargetId = "users-table",
+        Title = "Authorized Personnel Accounts",
+        Count = Model.Count(),
+        SearchPlaceholder = "Search name, email, or role...",
+        FilterLabel = "All Roles",
+        FilterOptions = new List<string> { "Admin", "DRCoordinator", "Staff" },
+        RightNote = "Admin Controlled Access"
+    }' />
 
     <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>
-                <tr class="border-b border-slate-200 bg-slate-50/80 text-slate-600 text-xs uppercase tracking-wider font-bold">
-                    <th class="py-4 px-6 whitespace-nowrap min-w-[240px]">Full Name</th>
-                    <th class="py-4 px-6 whitespace-nowrap min-w-[260px]">Account Email</th>
-                    <th class="py-4 px-6 whitespace-nowrap w-44">Assigned Role</th>
-                    <th class="py-4 px-6 whitespace-nowrap min-w-[300px]">Permissions Scope</th>
-                    <th class="py-4 pr-8 pl-6 text-right whitespace-nowrap w-36">Actions</th>
+                <tr class="border-b border-slate-200 bg-slate-50/60 text-slate-500 text-[11px] uppercase tracking-wider font-bold">
+                    <th class="py-3.5 px-6 whitespace-nowrap min-w-[220px]">Full Name</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap min-w-[240px]">Account Email</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap w-40">Assigned Role</th>
+                    <th class="py-3.5 px-6 whitespace-nowrap min-w-[280px]">Permissions Scope</th>
+                    <th class="py-3.5 pr-6 pl-4 text-right whitespace-nowrap w-40">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-700 text-sm">
+                <tr data-filter-empty class="hidden">
+                    <td colspan="5" class="py-12 text-center text-xs text-slate-400">
+                        No matching user accounts found for the current filter.
+                    </td>
+                </tr>
                 @foreach (var user in Model)
                 {
                     var isCurrentUser = user.Email == User.Identity?.Name;
-                    var roleBadge = user.Role switch
-                    {
-                        "Admin" => "bg-purple-100 text-purple-800 border-purple-200/80",
-                        "DRCoordinator" => "bg-teal-100 text-teal-800 border-teal-200/80",
-                        _ => "bg-slate-100 text-slate-700 border-slate-200/80"
-                    };
-
                     var permScope = user.Role switch
                     {
                         "Admin" => "Full CRUD on all modules + User & Role Management + Delete",
@@ -59,51 +53,42 @@
                         _ => "Read-only access across all modules"
                     };
 
-                    <tr class="hover:bg-slate-50/70 transition-colors group">
-                        <!-- Full Name -->
-                        <td class="py-4 px-6 font-bold text-slate-900 align-middle">
+                    <tr data-filter-item
+                        data-filter-value="@user.Role.ToLower()"
+                        data-search-text="@($"{user.FullName} {user.Email} {user.Role} {permScope}")"
+                        class="hover:bg-[#f4f6f2]/50 transition-colors group">
+                        <td class="py-4 px-6 font-semibold text-slate-900 align-middle">
                             <div class="flex items-center gap-2">
-                                <span class="text-sm font-bold text-slate-900">@user.FullName</span>
+                                <span>@user.FullName</span>
                                 @if (isCurrentUser)
                                 {
-                                    <span class="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200 font-bold">
+                                    <span class="text-[10px] bg-[#f4f6f2] text-[#355038] px-2 py-0.5 rounded-full border border-[#426246]/25 font-bold">
                                         You
                                     </span>
                                 }
                             </div>
                         </td>
 
-                        <!-- Account Email -->
                         <td class="py-4 px-6 font-mono text-xs text-slate-600 align-middle">
                             @user.Email
                         </td>
 
-                        <!-- Role Badge -->
                         <td class="py-4 px-6 whitespace-nowrap align-middle">
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border @roleBadge shadow-xs">
-                                @(user.Role == "DRCoordinator" ? "DR Coordinator" : user.Role)
-                            </span>
+                            <partial name="Components/_Badge" model='new BadgeModel { Value = user.Role, Type = "role" }' />
                         </td>
 
-                        <!-- Permission Scope -->
-                        <td class="py-4 px-6 text-xs text-slate-500 font-medium align-middle">
+                        <td class="py-4 px-6 text-xs text-slate-500 align-middle">
                             @permScope
                         </td>
 
-                        <!-- Actions -->
-                        <td class="py-4 pr-8 pl-6 text-right whitespace-nowrap align-middle">
-                            <div class="inline-flex items-center justify-end gap-2 text-xs">
-                                <a asp-action="EditRole" asp-route-id="@user.Id" class="px-3 py-1.5 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg font-semibold transition-colors">
-                                    Change Role
-                                </a>
-
+                        <td class="py-4 pr-6 pl-4 text-right whitespace-nowrap align-middle">
+                            <div class="inline-flex items-center justify-end gap-1.5">
+                                <partial name="Components/_Button" model='new ButtonModel { Text = "Change Role", Href = Url.Action("EditRole", new { id = user.Id }), Variant = "secondary", Size = "sm" }' />
                                 @if (!isCurrentUser)
                                 {
                                     <form asp-action="Delete" asp-route-id="@user.Id" method="post" onsubmit="return confirm('Are you sure you want to remove account @user.FullName?');" class="inline">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="px-3 py-1.5 text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 rounded-lg font-semibold transition-colors">
-                                            Remove
-                                        </button>
+                                        <partial name="Components/_Button" model='new ButtonModel { Variant = "danger-subtle", Size = "icon", Icon = "trash-2", IsSubmit = true, Title = "Remove User" }' />
                                     </form>
                                 }
                             </div>
@@ -114,3 +99,5 @@
         </table>
     </div>
 </div>
+
+<partial name="Components/Modals/_CreateUserModal" />

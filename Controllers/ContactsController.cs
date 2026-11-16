@@ -29,6 +29,7 @@ namespace Green_Basket.Controllers
             }
 
             var contacts = await query.OrderBy(c => c.Asset!.Name).ThenBy(c => c.Name).ToListAsync();
+            ViewData["AssetId"] = new SelectList(await _context.Assets.OrderBy(a => a.Name).ToListAsync(), "Id", "Name", assetId);
             return View(contacts);
         }
 
